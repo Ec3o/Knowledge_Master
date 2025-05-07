@@ -218,9 +218,6 @@ export default function Dashboard() {
                   <Database className="mr-2 h-4 w-4 text-muted-foreground" />
                   <h2 className="text-lg font-semibold">知识结构</h2>
                 </div>
-                <Button size="sm" variant="ghost">
-                  <PlusCircle className="h-4 w-4" />
-                </Button>
               </div>
               <KnowledgeTree onNodeSelect={handleNodeSelect} treeData={currentKnowledgeBase.treeData} />
             </div>
@@ -264,10 +261,6 @@ export default function Dashboard() {
                       <PlusCircle className="mx-auto h-8 w-8 text-muted-foreground" />
                       <h3 className="mt-4 text-lg font-medium">创建新知识节点</h3>
                       <p className="mt-2 text-sm text-muted-foreground">从左侧选择一个父节点，然后在这里添加新的知识</p>
-                      <Button className="mt-4" size="sm">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        创建根节点
-                      </Button>
                     </div>
                   </div>
                 )}

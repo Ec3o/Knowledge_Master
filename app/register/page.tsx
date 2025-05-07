@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -71,12 +72,15 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen flex-col items-center justify-center grid-background">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="mb-8 flex items-center text-2xl font-bold">
         <BookOpen className="mr-2 h-6 w-6" />
         💫Knowledge Universe
       </div>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-center text-2xl">注册</CardTitle>
           <CardDescription className="text-center">创建您的账号开始使用Knowledge Universe</CardDescription>
@@ -142,6 +146,11 @@ export default function RegisterPage() {
           </CardFooter>
         </form>
       </Card>
+      <div className="mt-8 text-center text-sm text-muted-foreground">
+        <Link href="/" className="hover:text-primary hover:underline">
+          返回首页
+        </Link>
+      </div>
     </div>
   )
 }

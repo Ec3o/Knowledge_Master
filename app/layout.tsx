@@ -1,18 +1,22 @@
 import type React from "react"
-import { Toaster } from "@/components/ui/toaster"
+import { CustomToaster } from "@/components/ui/custom-toaster"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <body>
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <CustomToaster />
+        </ThemeProvider>
       </body>
     </html>
   )
 }
-
-export const metadata = {
-      generator: 'v0.dev'
-    };
