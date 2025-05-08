@@ -12,16 +12,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { login } from "@/lib/api"
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,43 +32,30 @@ export default function RegisterPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "密码不匹配",
-        description: "请确保两次输入的密码相同",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsLoading(true)
-
+    e.preventDefault();
+    setIsLoading(true);
+  
     try {
-      // 这里应该是实际的注册API调用
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // 注册成功
+      const reponse = await login(formData.email, formData.password);
+      console.log("Submitting login", formData)
+      localStorage.setItem('token', reponse.data.token);
+  
       toast({
-        title: "注册成功",
-        description: "您的账号已创建，请登录",
-        variant: "default",
-      })
-
-      // 重定向到登录页面
-      router.push("/login")
+        title: "登录成功",
+        description: `欢迎回来，${reponse.data.user.username}!`,
+      });
+  
+      router.push("/knowledge-bases");
     } catch (error) {
       toast({
-        title: "注册失败",
-        description: "注册过程中出现错误，请重试",
+        title: "登录失败",
+        description: error instanceof Error ? error.message : "未知错误",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center grid-background">
@@ -82,22 +68,11 @@ export default function RegisterPage() {
       </div>
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-center text-2xl">注册</CardTitle>
-          <CardDescription className="text-center">创建您的账号开始使用Knowledge Universe</CardDescription>
+          <CardTitle className="text-center text-2xl">登录</CardTitle>
+          <CardDescription className="text-center">输入您的账号信息登录系统</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">姓名</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="您的姓名"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="email">邮箱</Label>
               <Input
@@ -111,7 +86,12 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">密码</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">密码</Label>
+                <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
+                  忘记密码?
+                </Link>
+              </div>
               <Input
                 id="password"
                 name="password"
@@ -121,26 +101,15 @@ export default function RegisterPage() {
                 onChange={handleInputChange}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">确认密码</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-              />
-            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "注册中..." : "注册"}
+              {isLoading ? "登录中..." : "登录"}
             </Button>
             <div className="text-center text-sm">
-              已有账号?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                登录
+              还没有账号?{" "}
+              <Link href="/register" className="text-primary hover:underline">
+                注册
               </Link>
             </div>
           </CardFooter>

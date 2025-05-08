@@ -12,14 +12,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { register } from "@/lib/api"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,26 +35,34 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "密码不匹配",
+        description: "请确保两次输入的密码相同",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      // 这里应该是实际的登录API调用
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await register(formData.name, formData.email, formData.password);
 
-      // 登录成功
+      // 注册成功
       toast({
-        title: "登录成功",
-        description: "欢迎回来！",
+        title: "注册成功",
+        description: "您的账号已创建，请登录",
         variant: "default",
       })
 
-      // 重定向到知识库选择页面
-      router.push("/knowledge-bases")
+      // 重定向到登录页面
+      router.push("/login")
     } catch (error) {
       toast({
-        title: "登录失败",
-        description: "邮箱或密码错误，请重试",
+        title: "注册失败",
+        description: "注册过程中出现错误，请重试",
         variant: "destructive",
       })
     } finally {
@@ -70,11 +81,22 @@ export default function LoginPage() {
       </div>
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-center text-2xl">登录</CardTitle>
-          <CardDescription className="text-center">输入您的账号信息登录系统</CardDescription>
+          <CardTitle className="text-center text-2xl">注册</CardTitle>
+          <CardDescription className="text-center">创建您的账号开始使用Knowledge Universe</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">姓名</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="您的姓名"
+                required
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">邮箱</Label>
               <Input
@@ -88,12 +110,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">密码</Label>
-                <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
-                  忘记密码?
-                </Link>
-              </div>
+              <Label htmlFor="password">密码</Label>
               <Input
                 id="password"
                 name="password"
@@ -103,15 +120,26 @@ export default function LoginPage() {
                 onChange={handleInputChange}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">确认密码</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+              />
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "登录中..." : "登录"}
+              {isLoading ? "注册中..." : "注册"}
             </Button>
             <div className="text-center text-sm">
-              还没有账号?{" "}
-              <Link href="/register" className="text-primary hover:underline">
-                注册
+              已有账号?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                登录
               </Link>
             </div>
           </CardFooter>
