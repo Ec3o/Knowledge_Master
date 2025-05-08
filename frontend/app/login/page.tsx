@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { login } from "@/lib/api"
+import { login,logout } from "@/lib/api"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -38,13 +38,13 @@ export default function LoginPage() {
     try {
       const reponse = await login(formData.email, formData.password);
       console.log("Submitting login", formData)
+      localStorage.removeItem('user_cache');
       localStorage.setItem('token', reponse.data.token);
   
       toast({
         title: "登录成功",
         description: `欢迎回来，${reponse.data.user.username}!`,
       });
-  
       router.push("/knowledge-bases");
     } catch (error) {
       toast({

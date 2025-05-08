@@ -48,7 +48,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      await register(formData.name, formData.email, formData.password);
+      const reponse = await register(formData.name, formData.email, formData.password);
 
       // 注册成功
       toast({
@@ -62,7 +62,7 @@ export default function RegisterPage() {
     } catch (error) {
       toast({
         title: "注册失败",
-        description: "注册过程中出现错误，请重试",
+        description: error instanceof Error ? error.message : "未知错误",
         variant: "destructive",
       })
     } finally {

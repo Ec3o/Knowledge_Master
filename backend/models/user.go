@@ -31,3 +31,20 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	}
 	return user, nil
 }
+
+func GetUserByID(db *sql.DB, userID string) (*User, error) {
+	query := `
+		SELECT user_id, email, username 
+		FROM users 
+		WHERE user_id = $1
+	`
+	row := db.QueryRow(query, userID)
+
+	user := &User{}
+	err := row.Scan(&user.UserID, &user.Email, &user.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

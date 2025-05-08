@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"knowledge_master_backend/controllers"
+	"knowledge_master_backend/middleware"
 )
 
 func SetupRoutes() *gin.Engine {
@@ -13,6 +14,10 @@ func SetupRoutes() *gin.Engine {
 		auth.POST("/register", controllers.Register)
 		auth.POST("/login", controllers.Login)
 	}
-
+	server := r.Group("/api")
+	server.Use(middleware.AuthMiddleware())
+	{
+		server.GET("/user/info", controllers.GetUserInfo)
+	}
 	return r
 }
