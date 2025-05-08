@@ -1,4 +1,5 @@
 import { UserData } from '@/types/user';
+import { KnowledgeBase } from '@/types/knowledge_base';
 const API_BASE = `http://localhost:8084`;
 const USER_CACHE_KEY = 'user_cache';
 const CACHE_EXPIRE_MS = 30 * 60 * 1000;
@@ -103,4 +104,68 @@ export async function fetchUserInfo(): Promise<UserData> {
     // 更新缓存
     cacheUser(result.data);
     return result.data;
+  }
+  export async function getKnowledgeBases(): Promise<KnowledgeBase[]> {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('未登录');
+  
+    const response = await fetch(`${API_BASE}/api/knowledge-bases`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || '获取知识库失败');
+    }
+  
+    const data = await response.json();
+    return data.data || [];
+  }
+  
+  // 创建知识库
+  export async function createKnowledgeBase(
+    name: string, 
+    description: string = ""
+  ): Promise<KnowledgeBase> {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('未登录');
+  
+    const response = await fetch(`${API_BASE}/api/knowledge-bases`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name, description })
+    });
+  
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || '创建知识库失败');
+    }
+  
+    const data = await response.json();
+    return data.data;
+  }
+  
+  // 获取单个知识库详情
+  export async function getKnowledgeBase(kbId: string): Promise<KnowledgeBase> {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('未登录');
+  
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || '获取知识库详情失败');
+    }
+  
+    const data = await response.json();
+    return data.data;
   }

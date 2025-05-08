@@ -1,0 +1,64 @@
+package controllers
+
+import (
+	"github.com/gin-gonic/gin"
+	"knowledge_master_backend/config"
+	"knowledge_master_backend/models"
+	"net/http"
+)
+
+// 创建知识库
+func CreateKnowledgeBase(c *gin.Context) {
+	userID := c.GetString("userID") // 从中间件获取
+
+	var input struct {
+		Name        string `json:"name" binding:"required"`
+		Description string `json:"description"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": "Invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	kb, err := models.CreateKnowledgeBase(config.DB, input.Name, input.Description, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "failed",
+			"message": "Failed to create knowledge base",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"status":  "success",
+		"message": "Knowledge base created",
+		"data":    kb,
+	})
+}
+
+// 获取用户的知识库列表
+func GetUserKnowledgeBases(c *gin.Context) {
+	userID := c.GetString("userID") // 从中间件获取
+
+	kbs, err := models.GetUserKnowledgeBases(config.DB, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "failed",
+			"message": "Failed to get knowledge bases",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Knowledge bases retrieved",
+		"data":    kbs,
+	})
+}

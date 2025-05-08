@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,8 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen, Plus, FolderTree, Clock, User2 } from "lucide-react"
 import UserNav from "@/components/user-nav"
-
+import { KnowledgeBase } from "@/types/knowledge_base"
+import { getUserInfo, getKnowledgeBases, createKnowledgeBase } from "@/lib/api"
 // 示例数据
 const initialKnowledgeBases = [
   {
@@ -48,11 +49,33 @@ const initialKnowledgeBases = [
 export default function KnowledgeBasesPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [knowledgeBases, setKnowledgeBases] = useState(initialKnowledgeBases)
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([])
   const [newKbName, setNewKbName] = useState("")
   const [newKbDescription, setNewKbDescription] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 获取当前用户信息
+        const user = await getUserInfo()
+        setCurrentUser(user)
+        
+        const kbs = await getKnowledgeBases()
+        setKnowledgeBases(kbs)
+      } catch (error) {
+        toast({
+          title: "加载失败",
+          description: error instanceof Error ? error.message : "无法加载知识库",
+          variant: "destructive",
+        })
+      }
+    }
+    
+    fetchData()
+  }, [toast])
 
   const handleCreateKnowledgeBase = async () => {
     if (!newKbName.trim()) {
@@ -67,32 +90,22 @@ export default function KnowledgeBasesPage() {
     setIsCreating(true)
 
     try {
-      // 这里应该是实际的API调用
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const newKb = await createKnowledgeBase(newKbName, newKbDescription)
 
-      const newKb = {
-        id: `kb${knowledgeBases.length + 1}`,
-        name: newKbName,
-        description: newKbDescription,
-        lastUpdated: new Date().toISOString(),
-        owner: "我",
-      }
-
-      setKnowledgeBases([...knowledgeBases, newKb])
+      setKnowledgeBases([newKb, ...knowledgeBases])
       setNewKbName("")
       setNewKbDescription("")
       setIsDialogOpen(false)
 
       toast({
         title: "创建成功",
-        description: `知识库 "${newKbName}" 已创建`,
+        description: `知识库 "${newKb.name}" 已创建`,
         variant: "default",
       })
     } catch (error) {
       toast({
         title: "创建失败",
-        description: "创建知识库时出现错误，请重试",
+        description: error instanceof Error ? error.message : "创建知识库时出现错误",
         variant: "destructive",
       })
     } finally {
@@ -100,14 +113,8 @@ export default function KnowledgeBasesPage() {
     }
   }
 
-  const handleSelectKnowledgeBase = (id: string) => {
-    // 在实际应用中，这里应该设置当前选中的知识库ID到全局状态或本地存储
-    toast({
-      title: "已选择知识库",
-      description: `正在加载知识库内容`,
-      variant: "default",
-    })
-    router.push(`/dashboard?kb=${id}`)
+  const handleSelectKnowledgeBase = (kbId: string) => {
+    router.push(`/knowledge-base/${kbId}`)
   }
 
   const formatDate = (dateString: string) => {
@@ -185,23 +192,28 @@ export default function KnowledgeBasesPage() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {knowledgeBases.map((kb) => (
-            <Card key={kb.id} className="overflow-hidden">
+            <Card key={kb.kb_id}>
               <CardHeader className="pb-3">
                 <CardTitle>{kb.name}</CardTitle>
-                <CardDescription className="line-clamp-2">{kb.description}</CardDescription>
+                <CardDescription className="line-clamp-2">
+                  {kb.description || "暂无描述"}
+                </CardDescription>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
                 <div className="flex items-center mb-2">
                   <Clock className="mr-2 h-4 w-4" />
-                  <span>更新于 {formatDate(kb.lastUpdated)}</span>
+                  <span>更新于 {formatDate(kb.updated_at)}</span>
                 </div>
                 <div className="flex items-center">
                   <User2 className="mr-2 h-4 w-4" />
-                  <span>{kb.owner}</span>
+                  <span>{kb.owner_id === currentUser?.user_id ? "我" : "共享知识库"}</span>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" onClick={() => handleSelectKnowledgeBase(kb.id)}>
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleSelectKnowledgeBase(kb.kb_id)}
+                >
                   <FolderTree className="mr-2 h-4 w-4" />
                   打开
                 </Button>

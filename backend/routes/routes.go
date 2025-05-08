@@ -18,6 +18,8 @@ func SetupRoutes() *gin.Engine {
 	server.Use(middleware.AuthMiddleware())
 	{
 		server.GET("/user/info", controllers.GetUserInfo)
+		server.GET("/knowledge-bases", controllers.GetUserKnowledgeBases)
+		server.POST("/knowledge-bases", controllers.CreateKnowledgeBase)
 	}
 	return r
 }
