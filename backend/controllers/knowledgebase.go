@@ -62,3 +62,21 @@ func GetUserKnowledgeBases(c *gin.Context) {
 		"data":    kbs,
 	})
 }
+
+func GetKnowledgeBaseByID(c *gin.Context) {
+	kbID := c.Param("kb_id")
+	kb, err := models.GetKnowledgeBaseById(config.DB, kbID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "failed",
+			"message": "Failed to get knowledge bases",
+			"error":   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Knowledge bases retrieved",
+		"data":    kb,
+	})
+}

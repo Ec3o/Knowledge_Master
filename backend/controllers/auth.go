@@ -40,7 +40,7 @@ func Register(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, apiResponse{
 			Status:  "failed",
-			Message: "Invalid request parameters",
+			Message: "无效的请求凭证",
 			Data:    gin.H{"details": err.Error()},
 		})
 		return
@@ -51,7 +51,7 @@ func Register(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, apiResponse{
 			Status:  "failed",
-			Message: "Could not process password",
+			Message: "无法处理密码",
 			Data:    nil,
 		})
 		return
@@ -62,7 +62,7 @@ func Register(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusConflict, apiResponse{
 			Status:  "failed",
-			Message: "Email already registered",
+			Message: "邮箱已经被注册",
 			Data:    nil,
 		})
 		return
@@ -71,7 +71,7 @@ func Register(c *gin.Context) {
 	user.Password = "******"
 	c.JSON(http.StatusCreated, apiResponse{
 		Status:  "success",
-		Message: "User registered successfully",
+		Message: "用户注册成功",
 		Data: gin.H{
 			"user": user,
 		},
@@ -88,7 +88,7 @@ func Login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, apiResponse{
 			Status:  "failed",
-			Message: "Invalid login credentials",
+			Message: "无效的用户名密码",
 			Data:    gin.H{"details": err.Error()},
 		})
 		return
@@ -99,7 +99,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, apiResponse{
 			Status:  "failed",
-			Message: "Authentication failed",
+			Message: "鉴权失败",
 			Data:    gin.H{"hint": "Check your email and password"},
 		})
 		return
@@ -109,7 +109,7 @@ func Login(c *gin.Context) {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, apiResponse{
 			Status:  "failed",
-			Message: "Authentication failed",
+			Message: "鉴权失败",
 			Data:    gin.H{"hint": "Check your email and password"},
 		})
 		return
@@ -120,7 +120,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, apiResponse{
 			Status:  "failed",
-			Message: "Could not generate access token",
+			Message: "无法生成访问凭证，请检查后端服务器运行情况",
 			Data:    nil,
 		})
 		return
@@ -129,7 +129,7 @@ func Login(c *gin.Context) {
 	user.Password = "******"
 	c.JSON(http.StatusOK, apiResponse{
 		Status:  "success",
-		Message: "Login successful",
+		Message: "登录成功",
 		Data: gin.H{
 			"token": token,
 			"user":  user,

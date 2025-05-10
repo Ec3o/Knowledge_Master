@@ -106,7 +106,7 @@ export default function KnowledgeBasesPage() {
         <div className="container flex h-16 items-center px-4">
           <div className="flex items-center">
             <BookOpen className="mr-2 h-6 w-6" />
-            <h1 className="text-2xl font-bold">知识树</h1>
+            <h1 className="text-2xl font-bold">Knowledge Universe</h1>
           </div>
           <div className="ml-auto flex items-center space-x-4">
             <UserNav />
@@ -142,7 +142,7 @@ export default function KnowledgeBasesPage() {
         ) : filteredKnowledgeBases.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredKnowledgeBases.map((kb) => (
-              <Card key={kb.id} className="overflow-hidden">
+              <Card key={kb.kb_id} className="overflow-hidden">
                 <CardHeader className="pb-3">
                   <CardTitle>{kb.name}</CardTitle>
                   <CardDescription>{kb.description || "无描述"}</CardDescription>

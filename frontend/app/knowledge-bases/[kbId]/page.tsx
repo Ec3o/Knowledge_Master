@@ -12,7 +12,7 @@ import KnowledgeView from "@/components/knowledge-view"
 import { useToast } from "@/components/ui/use-toast"
 import UserNav from "@/components/user-nav"
 import Link from "next/link"
-import { getKnowledgeBaseWithTree } from "@/lib/api"
+import { getKnowledgeBaseWithTree,getKnowledgeBase } from "@/lib/api"
 import type { KnowledgeTreeResponse } from "@/types/knowledge-base"
 
 export default function KnowledgeBasePage() {
@@ -24,6 +24,7 @@ export default function KnowledgeBasePage() {
   console.log("KnowledgeBasePage kbId:", kbId)
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeTreeResponse | null>(null)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
+  const [kbname, setKbName] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
@@ -32,10 +33,12 @@ export default function KnowledgeBasePage() {
       try {
         setIsLoading(true)
         const response = await getKnowledgeBaseWithTree(kbId)
+        const fetch_name_response = await getKnowledgeBase(kbId)
         console.log("KnowledgeBasePage data:", response) // 
         console.log("KnowledgeBasePage treeData:", ) //null
   
         setKnowledgeBase(response);
+        setKbName(fetch_name_response.name)
         console.log("KnowledgeBasePage knowledgeBase:", knowledgeBase)//null
       } catch (error) {
         console.error("获取知识库失败:", error)
@@ -142,9 +145,14 @@ export default function KnowledgeBasePage() {
               返回知识库列表
             </Link>
           </Button>
-          <div className="flex items-center">
-            <BookOpen className="mr-2 h-5 w-5" />
-            <h1 className="text-xl font-bold">{knowledgeBase.name}</h1>
+          <div className="flex items-center max-w-[180px] sm:max-w-[240px] md:max-w-[300px]">
+            <BookOpen className="flex-shrink-0 mr-2 h-5 w-5" />
+            <h1 
+              className="text-sm font-bold sm:text-xl md:text-2xl truncate hover:text-clip"
+              title={kbname || ""}
+            >
+              {kbname || <span className="inline-block h-6 w-40 animate-pulse rounded-md bg-muted" />}
+            </h1>
           </div>
           <div className="ml-auto flex items-center space-x-4">
             <div className="relative">
