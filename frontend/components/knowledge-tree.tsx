@@ -1,9 +1,20 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
-import { ChevronRight, ChevronDown, File, Folder, FolderOpen, Plus, Trash2, Edit, Check, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import {
+  ChevronRight,
+  ChevronDown,
+  File,
+  Folder,
+  FolderOpen,
+  Plus,
+  Trash2,
+  Edit,
+  Check,
+  X,
+  Loader2,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
@@ -18,16 +29,41 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { createKnowledgeNode, updateKnowledgeNode } from "@/lib/api"
 
-type TreeNode = {
+// 使用新的接口定义
+export interface KnowledgeBase {
   id: string
   name: string
-  type: "file" | "folder"
-  children?: TreeNode[]
+  description: string
+  owner_id: string
+  created_at: string
+  updated_at: string
+  is_public?: boolean
+  cover_image_url?: string
+}
+
+export interface KnowledgeNode {
+  id: string
+  kb_id?: string
+  parent_id?: string | null
+  type: "folder" | "file"
+  name: string
+  content?: string
+  children?: KnowledgeNode[]
+  created_at?: string
+  updated_at?: string
+}
+
+export interface KnowledgeTreeResponse {
+  id: string
+  name: string
+  description: string
+  treeData: KnowledgeNode[]
 }
 
 type TreeNodeProps = {
-  node: TreeNode
+  node: KnowledgeNode
   level: number
   onNodeSelect: (id: string) => void
   expanded: Record<string, boolean>
@@ -36,6 +72,7 @@ type TreeNodeProps = {
   onAddNode: (parentId: string) => void
   onDeleteNode: (nodeId: string, nodeName: string) => void
   onRenameNode: (nodeId: string, nodeName: string) => void
+  kbId: string
 }
 
 const TreeNodeComponent = ({
@@ -48,11 +85,14 @@ const TreeNodeComponent = ({
   onAddNode,
   onDeleteNode,
   onRenameNode,
+  kbId,
 }: TreeNodeProps) => {
   const isExpanded = expanded[node.id]
   const isSelected = selectedNode === node.id
   const [isRenaming, setIsRenaming] = useState(false)
   const [newName, setNewName] = useState(node.name)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const { toast } = useToast()
 
   const handleClick = () => {
     if (node.type === "folder") {
@@ -77,12 +117,39 @@ const TreeNodeComponent = ({
     setIsRenaming(true)
   }
 
-  const handleRenameSubmit = (e: React.FormEvent) => {
+  const handleRenameSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (newName.trim() !== "") {
+
+    if (newName.trim() === "") {
+      toast({
+        title: "重命名失败",
+        description: "节点名称不能为空",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (newName === node.name) {
+      setIsRenaming(false)
+      return
+    }
+
+    try {
+      setIsUpdating(true)
+      await updateKnowledgeNode(kbId, node.id, { name: newName })
       onRenameNode(node.id, newName)
       setIsRenaming(false)
+    } catch (error) {
+      console.error("重命名节点失败:", error)
+      toast({
+        title: "重命名失败",
+        description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
+        variant: "destructive",
+      })
+      setNewName(node.name)
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -130,14 +197,21 @@ const TreeNodeComponent = ({
               className="h-7 py-1 text-sm"
               autoFocus
               onClick={(e) => e.stopPropagation()}
+              disabled={isUpdating}
             />
             <div className="flex ml-1">
-              <Button type="submit" size="icon" variant="ghost" className="h-6 w-6">
-                <Check className="h-3 w-3" />
-              </Button>
-              <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={handleRenameCancel}>
-                <X className="h-3 w-3" />
-              </Button>
+              {isUpdating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Button type="submit" size="icon" variant="ghost" className="h-6 w-6">
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={handleRenameCancel}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
             </div>
           </form>
         ) : (
@@ -175,6 +249,7 @@ const TreeNodeComponent = ({
               onAddNode={onAddNode}
               onDeleteNode={onDeleteNode}
               onRenameNode={onRenameNode}
+              kbId={kbId}
             />
           ))}
         </div>
@@ -185,20 +260,39 @@ const TreeNodeComponent = ({
 
 type KnowledgeTreeProps = {
   onNodeSelect: (id: string) => void
-  treeData: TreeNode[]
+  treeData: KnowledgeNode[]
+  kbId: string
 }
 
-export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeProps) {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    chapter1: true,
-  })
+export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: KnowledgeTreeProps) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [newNodeParent, setNewNodeParent] = useState<string | null>(null)
   const [newNodeName, setNewNodeName] = useState("")
   const [newNodeType, setNewNodeType] = useState<"file" | "folder">("file")
+  const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
-  const [localTreeData, setLocalTreeData] = useState<TreeNode[]>(treeData)
+  const [localTreeData, setLocalTreeData] = useState<KnowledgeNode[]>(treeData || [])
+  console.log("localTreeData", treeData)
+  // 初始化展开状态
+  useEffect(() => {
+    const initialExpanded: Record<string, boolean> = {}
+
+    // 递归函数来设置文件夹的初始展开状态
+    const setInitialExpandedState = (nodes: KnowledgeNode[]) => {
+      nodes.forEach((node) => {
+        if (node.type === "folder" && node.children && node.children.length > 0) {
+          initialExpanded[node.id] = true
+          setInitialExpandedState(node.children)
+        }
+      })
+    }
+
+    setInitialExpandedState(treeData || [])
+    setExpanded(initialExpanded)
+    setLocalTreeData(treeData || [])
+  }, [treeData])
 
   const toggleExpand = (id: string) => {
     setExpanded((prev) => ({
@@ -219,7 +313,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
     setIsAddDialogOpen(true)
   }
 
-  const findNodeById = (nodes: TreeNode[], id: string): TreeNode | null => {
+  const findNodeById = (nodes: KnowledgeNode[], id: string): KnowledgeNode | null => {
     for (const node of nodes) {
       if (node.id === id) return node
       if (node.children) {
@@ -230,7 +324,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
     return null
   }
 
-  const addNodeToTree = (nodes: TreeNode[], parentId: string, newNode: TreeNode): TreeNode[] => {
+  const addNodeToTree = (nodes: KnowledgeNode[], parentId: string, newNode: KnowledgeNode): KnowledgeNode[] => {
     return nodes.map((node) => {
       if (node.id === parentId) {
         return {
@@ -249,7 +343,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
     })
   }
 
-  const deleteNodeFromTree = (nodes: TreeNode[], nodeId: string): TreeNode[] => {
+  const deleteNodeFromTree = (nodes: KnowledgeNode[], nodeId: string): KnowledgeNode[] => {
     return nodes.filter((node) => {
       if (node.id === nodeId) return false
       if (node.children) {
@@ -259,10 +353,10 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
     })
   }
 
-  const renameNodeInTree = (nodes: TreeNode[], nodeId: string, newName: string): TreeNode[] => {
+  const renameNodeInTree = (nodes: KnowledgeNode[], nodeId: string, newName: string): KnowledgeNode[] => {
     return nodes.map((node) => {
       if (node.id === nodeId) {
-        return { ...node, name: newName }
+        return { ...node, name: newName, updated_at: new Date().toISOString() }
       }
       if (node.children) {
         return {
@@ -274,8 +368,8 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
     })
   }
 
-  const handleAddNode = () => {
-    if (!newNodeParent || !newNodeName.trim()) {
+  const handleAddNode = async () => {
+    if (!newNodeName.trim()) {
       toast({
         title: "无法创建节点",
         description: "节点名称不能为空",
@@ -284,44 +378,72 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
       return
     }
 
-    const newNodeId = `node_${Date.now()}`
-    const newNode: TreeNode = {
-      id: newNodeId,
-      name: newNodeName,
-      type: newNodeType,
-      children: newNodeType === "folder" ? [] : undefined,
-    }
+    try {
+      setIsCreating(true)
 
-    // 更新本地树数据
-    const updatedTreeData = addNodeToTree(localTreeData, newNodeParent, newNode)
-    setLocalTreeData(updatedTreeData)
+      // 准备节点数据
+      const nodeData = {
+        parent_id: newNodeParent === "root" ? null : newNodeParent,
+        type: newNodeType,
+        name: newNodeName,
+        content: newNodeType === "file" ? "" : undefined,
+      }
 
-    // 如果是文件夹，默认展开
-    if (newNodeType === "folder") {
-      setExpanded((prev) => ({ ...prev, [newNodeId]: true }))
-    }
+      // 调用API创建节点
+      const newNode = await createKnowledgeNode(kbId, nodeData)
 
-    // 关闭对话框
-    setIsAddDialogOpen(false)
+      // 更新本地树数据
+      let updatedTreeData: KnowledgeNode[]
 
-    // 显示成功消息
-    toast({
-      title: "创建成功",
-      description: `已创建${newNodeType === "folder" ? "文件夹" : "知识点"} "${newNodeName}"`,
-      variant: "default",
-    })
+      if (newNodeParent === "root") {
+        // 添加根节点
+        updatedTreeData = [...localTreeData, newNode]
+      } else {
+        // 添加子节点
+        updatedTreeData = addNodeToTree(localTreeData, newNodeParent!, newNode)
+      }
 
-    // 如果是文件，自动选中
-    if (newNodeType === "file") {
-      setSelectedNode(newNodeId)
-      onNodeSelect(newNodeId)
+      setLocalTreeData(updatedTreeData)
+
+      // 如果是文件夹，默认展开
+      if (newNodeType === "folder") {
+        setExpanded((prev) => ({ ...prev, [newNode.id]: true }))
+      }
+
+      // 关闭对话框
+      setIsAddDialogOpen(false)
+
+      // 显示成功消息
+      toast({
+        title: "创建成功",
+        description: `已创建${newNodeType === "folder" ? "文件夹" : "知识点"} "${newNodeName}"`,
+        variant: "default",
+      })
+
+      // 如果是文件，自动选中
+      if (newNodeType === "file") {
+        setSelectedNode(newNode.id)
+        onNodeSelect(newNode.id)
+      }
+    } catch (error) {
+      console.error("创建节点失败:", error)
+      toast({
+        title: "创建节点失败",
+        description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCreating(false)
     }
   }
 
   const handleDeleteNode = (nodeId: string, nodeName: string) => {
+    const nodeToDelete = findNodeById(localTreeData, nodeId)
+    const nodeType = nodeToDelete?.type === "folder" ? "文件夹" : "知识点"
+
     toast({
       title: "确认删除",
-      description: `您确定要删除${findNodeById(localTreeData, nodeId)?.type === "folder" ? "文件夹" : "知识点"} "${nodeName}" 吗？此操作不可撤销。`,
+      description: `您确定要删除${nodeType} "${nodeName}" 吗？此操作不可撤销。`,
       variant: "destructive",
       action: (
         <div className="flex space-x-2">
@@ -341,21 +463,33 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => {
-              // 更新本地树数据
-              const updatedTreeData = deleteNodeFromTree(localTreeData, nodeId)
-              setLocalTreeData(updatedTreeData)
+            onClick={async () => {
+              try {
+                // 这里应该调用API删除节点
+                // 目前API中没有提供删除节点的方法，需要添加
 
-              // 如果删除的是当前选中的节点，清除选中状态
-              if (selectedNode === nodeId) {
-                setSelectedNode(null)
+                // 更新本地树数据
+                const updatedTreeData = deleteNodeFromTree(localTreeData, nodeId)
+                setLocalTreeData(updatedTreeData)
+
+                // 如果删除的是当前选中的节点，清除选中状态
+                if (selectedNode === nodeId) {
+                  setSelectedNode(null)
+                }
+
+                toast({
+                  title: "删除成功",
+                  description: `已删除 "${nodeName}"`,
+                  variant: "default",
+                })
+              } catch (error) {
+                console.error("删除节点失败:", error)
+                toast({
+                  title: "删除节点失败",
+                  description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
+                  variant: "destructive",
+                })
               }
-
-              toast({
-                title: "删除成功",
-                description: `已删除 "${nodeName}"`,
-                variant: "default",
-              })
             }}
           >
             删除
@@ -388,20 +522,29 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
   return (
     <div className="space-y-2">
       <div className="max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
-        {localTreeData.map((node) => (
-          <TreeNodeComponent
-            key={node.id}
-            node={node}
-            level={0}
-            onNodeSelect={handleNodeSelect}
-            expanded={expanded}
-            toggleExpand={toggleExpand}
-            selectedNode={selectedNode}
-            onAddNode={openAddNodeDialog}
-            onDeleteNode={handleDeleteNode}
-            onRenameNode={handleRenameNode}
-          />
-        ))}
+        {localTreeData && localTreeData.length > 0 ? (
+          localTreeData.map((node) => (
+            <TreeNodeComponent
+              key={node.id}
+              node={node}
+              level={0}
+              onNodeSelect={handleNodeSelect}
+              expanded={expanded}
+              toggleExpand={toggleExpand}
+              selectedNode={selectedNode}
+              onAddNode={openAddNodeDialog}
+              onDeleteNode={handleDeleteNode}
+              onRenameNode={handleRenameNode}
+              kbId={kbId}
+            />
+          ))
+        ) : (
+          <div className="text-center py-4 text-muted-foreground">
+            <Folder className="mx-auto h-8 w-8 mb-2 opacity-50" />
+            <p>此知识库还没有内容</p>
+            <p className="text-sm">点击下方按钮添加第一个节点</p>
+          </div>
+        )}
       </div>
 
       <Button variant="outline" size="sm" className="w-full mt-2" onClick={handleAddRootNode}>
@@ -428,6 +571,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
                 onChange={(e) => setNewNodeName(e.target.value)}
                 placeholder="输入节点名称"
                 autoFocus
+                disabled={isCreating}
               />
             </div>
             <div className="grid gap-2">
@@ -436,6 +580,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
                 value={newNodeType}
                 onValueChange={(value) => setNewNodeType(value as "file" | "folder")}
                 className="flex space-x-4"
+                disabled={isCreating}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="file" id="node-type-file" />
@@ -455,10 +600,19 @@ export default function KnowledgeTree({ onNodeSelect, treeData }: KnowledgeTreeP
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isCreating}>
               取消
             </Button>
-            <Button onClick={handleAddNode}>创建</Button>
+            <Button onClick={handleAddNode} disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  创建中...
+                </>
+              ) : (
+                "创建"
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
