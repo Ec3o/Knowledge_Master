@@ -22,8 +22,6 @@ export interface KnowledgeNode {
 }
 
 export interface KnowledgeTreeResponse {
-  kb_id: string;
-  name: string;
-  description: string;
-  treeData: KnowledgeNode[];
+  data: KnowledgeNode[];
+  status: 'success' | 'failed';
 }

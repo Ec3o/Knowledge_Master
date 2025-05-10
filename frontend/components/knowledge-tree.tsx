@@ -14,6 +14,7 @@ import {
   Check,
   X,
   Loader2,
+  RefreshCw,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { createKnowledgeNode, updateKnowledgeNode } from "@/lib/api"
+import { getKnowledgeBaseWithTree, createKnowledgeNode, updateKnowledgeNode } from "@/lib/api"
 
 // 使用新的接口定义
 export interface KnowledgeBase {
@@ -272,9 +273,12 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
   const [newNodeName, setNewNodeName] = useState("")
   const [newNodeType, setNewNodeType] = useState<"file" | "folder">("file")
   const [isCreating, setIsCreating] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
   const [localTreeData, setLocalTreeData] = useState<KnowledgeNode[]>(treeData || [])
-  console.log("localTreeData", treeData)
+
+  console.log("KnowledgeTree received treeData:", treeData)
+
   // 初始化展开状态
   useEffect(() => {
     const initialExpanded: Record<string, boolean> = {}
@@ -293,6 +297,55 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
     setExpanded(initialExpanded)
     setLocalTreeData(treeData || [])
   }, [treeData])
+
+  // 刷新知识树数据
+  const refreshTreeData = async () => {
+    try {
+      setIsRefreshing(true)
+      console.log("Refreshing tree data for kbId:", kbId)
+
+      const response = await getKnowledgeBaseWithTree(kbId)
+      console.log("Refreshed tree data:", response)
+
+      if (response && response.data) {
+        setLocalTreeData(response.data)
+
+        // 更新展开状态
+        const newExpanded: Record<string, boolean> = { ...expanded }
+
+        // 递归函数来保持文件夹的展开状态
+        const updateExpandedState = (nodes: KnowledgeNode[]) => {
+          nodes.forEach((node) => {
+            if (node.type === "folder" && node.children && node.children.length > 0) {
+              // 如果是新添加的节点，默认展开
+              if (newExpanded[node.id] === undefined) {
+                newExpanded[node.id] = true
+              }
+              updateExpandedState(node.children)
+            }
+          })
+        }
+
+        updateExpandedState(response.data)
+        setExpanded(newExpanded)
+      }
+
+      toast({
+        title: "刷新成功",
+        description: "知识树数据已更新",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("刷新知识树失败:", error)
+      toast({
+        title: "刷新失败",
+        description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
+        variant: "destructive",
+      })
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
 
   const toggleExpand = (id: string) => {
     setExpanded((prev) => ({
@@ -389,26 +442,11 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
         content: newNodeType === "file" ? "" : undefined,
       }
 
+      console.log("Creating node with data:", nodeData)
+
       // 调用API创建节点
       const newNode = await createKnowledgeNode(kbId, nodeData)
-
-      // 更新本地树数据
-      let updatedTreeData: KnowledgeNode[]
-
-      if (newNodeParent === "root") {
-        // 添加根节点
-        updatedTreeData = [...localTreeData, newNode]
-      } else {
-        // 添加子节点
-        updatedTreeData = addNodeToTree(localTreeData, newNodeParent!, newNode)
-      }
-
-      setLocalTreeData(updatedTreeData)
-
-      // 如果是文件夹，默认展开
-      if (newNodeType === "folder") {
-        setExpanded((prev) => ({ ...prev, [newNode.id]: true }))
-      }
+      console.log("API returned new node:", newNode)
 
       // 关闭对话框
       setIsAddDialogOpen(false)
@@ -419,6 +457,9 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
         description: `已创建${newNodeType === "folder" ? "文件夹" : "知识点"} "${newNodeName}"`,
         variant: "default",
       })
+
+      // 从API获取最新的树数据
+      await refreshTreeData()
 
       // 如果是文件，自动选中
       if (newNodeType === "file") {
@@ -477,6 +518,9 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
                   setSelectedNode(null)
                 }
 
+                // 从API获取最新的树数据
+                await refreshTreeData()
+
                 toast({
                   title: "删除成功",
                   description: `已删除 "${nodeName}"`,
@@ -499,10 +543,13 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
     })
   }
 
-  const handleRenameNode = (nodeId: string, newName: string) => {
+  const handleRenameNode = async (nodeId: string, newName: string) => {
     // 更新本地树数据
     const updatedTreeData = renameNodeInTree(localTreeData, nodeId, newName)
     setLocalTreeData(updatedTreeData)
+
+    // 从API获取最新的树数据
+    await refreshTreeData()
 
     toast({
       title: "重命名成功",
@@ -521,7 +568,31 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
   return (
     <div className="space-y-2">
+      <div className="flex justify-between items-center mb-2">
+        <Button variant="outline" size="sm" className="w-full justify-start" onClick={handleAddRootNode}>
+          <Plus className="mr-2 h-4 w-4" />
+          添加根节点
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-2 h-8 w-8"
+          onClick={refreshTreeData}
+          disabled={isRefreshing}
+          title="刷新知识树"
+        >
+          <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+        </Button>
+      </div>
+
       <div className="max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
+        {isRefreshing && (
+          <div className="flex justify-center items-center py-2">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span className="text-sm text-muted-foreground">刷新中...</span>
+          </div>
+        )}
+
         {localTreeData && localTreeData.length > 0 ? (
           localTreeData.map((node) => (
             <TreeNodeComponent
@@ -542,15 +613,10 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
           <div className="text-center py-4 text-muted-foreground">
             <Folder className="mx-auto h-8 w-8 mb-2 opacity-50" />
             <p>此知识库还没有内容</p>
-            <p className="text-sm">点击下方按钮添加第一个节点</p>
+            <p className="text-sm">点击上方按钮添加第一个节点</p>
           </div>
         )}
       </div>
-
-      <Button variant="outline" size="sm" className="w-full mt-2" onClick={handleAddRootNode}>
-        <Plus className="mr-2 h-4 w-4" />
-        添加根节点
-      </Button>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>

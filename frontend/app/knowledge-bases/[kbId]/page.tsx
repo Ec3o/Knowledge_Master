@@ -12,7 +12,6 @@ import KnowledgeView from "@/components/knowledge-view"
 import { useToast } from "@/components/ui/use-toast"
 import UserNav from "@/components/user-nav"
 import Link from "next/link"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { getKnowledgeBaseWithTree } from "@/lib/api"
 import type { KnowledgeTreeResponse } from "@/types/knowledge-base"
 
@@ -32,9 +31,12 @@ export default function KnowledgeBasePage() {
     async function fetchKnowledgeBase() {
       try {
         setIsLoading(true)
-        const data = await getKnowledgeBaseWithTree(kbId)
-        setKnowledgeBase(data)
-        console.log("KnowledgeBasePage data:", data)
+        const response = await getKnowledgeBaseWithTree(kbId)
+        console.log("KnowledgeBasePage data:", response) // 
+        console.log("KnowledgeBasePage treeData:", ) //null
+  
+        setKnowledgeBase(response);
+        console.log("KnowledgeBasePage knowledgeBase:", knowledgeBase)//null
       } catch (error) {
         console.error("获取知识库失败:", error)
         toast({
@@ -173,11 +175,7 @@ export default function KnowledgeBasePage() {
                   <h2 className="text-lg font-semibold">知识结构</h2>
                 </div>
               </div>
-              <KnowledgeTree
-                onNodeSelect={handleNodeSelect}
-                treeData={knowledgeBase.treeData || []}
-                kbId={kbId}
-              />
+              <KnowledgeTree onNodeSelect={handleNodeSelect} treeData={knowledgeBase.data || []} kbId={kbId} />
             </div>
           </div>
 

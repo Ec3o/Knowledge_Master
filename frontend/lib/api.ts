@@ -201,7 +201,7 @@ export async function getKnowledgeTree(kbId: string): Promise<KnowledgeNode[]> {
   }
 
   const data = await response.json()
-  return data.treeData || []
+  return data.data || []
 }
 
 // 创建知识节点
