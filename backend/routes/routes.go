@@ -23,6 +23,8 @@ func SetupRoutes() *gin.Engine {
 		server.GET("/knowledge-bases/:kb_id", controllers.GetKnowledgeBaseByID)
 		server.GET("/knowledge-bases/:kb_id/tree", controllers.GetKnowledgeTree)
 		server.POST("/knowledge-bases/:kb_id/tree", controllers.AddKnowledgeNode)
+		server.GET("/knowledge-bases/:kb_id/nodes/:node_id", controllers.GetNodeData)
+		server.PUT("/knowledge-bases/:kb_id/nodes/:node_id", controllers.UpdateNodeData)
 	}
 	return r
 }

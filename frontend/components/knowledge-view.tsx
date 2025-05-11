@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from 'lucide-react'
 import { KnowledgeNode } from "@/types/knowledge-base"
-
+import { getKnowledgeNode } from "@/lib/api"
 type KnowledgeViewProps = {
   nodeId: string
   kbId: string
@@ -21,22 +21,8 @@ export default function KnowledgeView({ nodeId, kbId }: KnowledgeViewProps) {
     async function fetchNodeData() {
       try {
         setIsLoading(true)
-        // 这里应该调用API获取节点详情
-        // 目前API中没有提供获取单个节点的方法，需要添加
-        
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        // 模拟数据
-        setNode({
-          id: nodeId,
-          kb_id: kbId,
-          name: "示例知识点",
-          type: "file",
-          content: "这是示例知识点的内容。在实际应用中，这里应该显示从API获取的内容。",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+        const response = await getKnowledgeNode(kbId, nodeId)
+        setNode(response)
       } catch (error) {
         console.error("获取节点详情失败:", error)
         toast({

@@ -138,7 +138,7 @@ const TreeNodeComponent = ({
 
     try {
       setIsUpdating(true)
-      await updateKnowledgeNode(kbId, node.id, { name: newName })
+      await updateKnowledgeNode(kbId, node.id, { title: newName })
       onRenameNode(node.id, newName)
       setIsRenaming(false)
     } catch (error) {

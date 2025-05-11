@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -122,4 +123,77 @@ func AddKnowledgeNode(db *sql.DB, kbID string, node *KnowledgeNode) (*KnowledgeN
 	node.UpdatedAt = updatedAt
 
 	return node, nil
+}
+func GetKnowledgeNode(db *sql.DB, kbID string, nodeID string) (*KnowledgeNode, error) {
+	query := `
+        SELECT 
+            node_id, 
+            parent_id, 
+            node_type, 
+            title, 
+            content, 
+            sort_order,
+            created_at,
+            updated_at
+        FROM knowledge_nodes
+        WHERE kb_id = $1 AND node_id = $2
+    `
+
+	var node KnowledgeNode
+	var parentID sql.NullString
+	err := db.QueryRow(query, kbID, nodeID).Scan(
+		&node.NodeID,
+		&parentID,
+		&node.Type,
+		&node.Title,
+		&node.Content,
+		&node.SortOrder,
+		&node.CreatedAt,
+		&node.UpdatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("knowledge node not found")
+		}
+		return nil, fmt.Errorf("failed to get knowledge node: %w", err)
+	}
+
+	if parentID.Valid {
+		node.ParentID = parentID.String
+	}
+
+	return &node, nil
+}
+func UpdateKnowledgeNode(db *sql.DB, kbID, nodeID, title, content string) (*KnowledgeNode, error) {
+	query := `
+        UPDATE knowledge_nodes
+        SET title = $1, 
+            content = $2, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE kb_id = $3 AND node_id = $4
+        RETURNING node_id, kb_id, parent_id, node_type, title, content, sort_order, created_at, updated_at
+    `
+
+	var node KnowledgeNode
+	err := db.QueryRow(query, title, content, kbID, nodeID).Scan(
+		&node.NodeID,
+		&node.KBID,
+		&node.ParentID,
+		&node.Type,
+		&node.Title,
+		&node.Content,
+		&node.SortOrder,
+		&node.CreatedAt,
+		&node.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update node: %w", err)
+	}
+
+	return &node, nil
+}
+
+func CheckKBPermission(db *sql.DB, kbID string, userID string, level int) (bool, error) {
+	return true, nil
 }

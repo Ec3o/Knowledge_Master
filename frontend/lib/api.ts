@@ -204,6 +204,26 @@ export async function getKnowledgeTree(kbId: string): Promise<KnowledgeNode[]> {
   return data.data || []
 }
 
+// 获取单个知识节点
+export async function getKnowledgeNode(kbId: string, nodeId: string): Promise<KnowledgeNode> {
+  const token = localStorage.getItem("token")
+  if (!token) throw new Error("未登录")
+  const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/nodes/${nodeId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || "获取知识节点失败")
+  }
+  const data = await response.json()
+  return data.data
+}
+
+
+
+
 // 创建知识节点
 export async function createKnowledgeNode(
   kbId: string,
@@ -239,7 +259,7 @@ export async function updateKnowledgeNode(
   kbId: string,
   nodeId: string,
   data: {
-    name?: string
+    title?: string
     content?: string
   },
 ): Promise<KnowledgeNode> {
@@ -247,7 +267,7 @@ export async function updateKnowledgeNode(
   if (!token) throw new Error("未登录")
 
   const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/nodes/${nodeId}`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

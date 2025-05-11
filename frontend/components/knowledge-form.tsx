@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, Save } from "lucide-react"
 import type { KnowledgeNode } from "@/types/knowledge-base"
-import { updateKnowledgeNode } from "@/lib/api"
+import { getKnowledgeNode,updateKnowledgeNode } from "@/lib/api"
 
 type KnowledgeFormProps = {
   nodeId: string
@@ -33,27 +33,12 @@ export default function KnowledgeForm({ nodeId, kbId }: KnowledgeFormProps) {
     async function fetchNodeData() {
       try {
         setIsLoading(true)
-        // 这里应该调用API获取节点详情
-        // 目前API中没有提供获取单个节点的方法，需要添加
+        const response = await getKnowledgeNode(kbId, nodeId)
 
-        // 模拟API调用
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // 模拟数据
-        const mockNode = {
-          id: nodeId,
-          kb_id: kbId,
-          name: "示例知识点",
-          type: "file",
-          content: "这是示例知识点的内容。在实际应用中，这里应该显示从API获取的内容。",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-
-        setNode(mockNode)
+        setNode(response)
         setFormData({
-          name: mockNode.name,
-          content: mockNode.content || "",
+          name: response.name,
+          content: response.content || "",
         })
       } catch (error) {
         console.error("获取节点详情失败:", error)
@@ -95,7 +80,7 @@ export default function KnowledgeForm({ nodeId, kbId }: KnowledgeFormProps) {
 
       // 调用API更新节点
       await updateKnowledgeNode(kbId, nodeId, {
-        name: formData.name,
+        title: formData.name,
         content: formData.content,
       })
 
