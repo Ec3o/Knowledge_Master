@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { register } from "@/lib/api"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
+import { register } from "@/lib/api/register"
 
 export default function RegisterPage() {
   const router = useRouter()

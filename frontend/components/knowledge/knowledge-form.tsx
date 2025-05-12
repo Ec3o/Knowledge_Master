@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, Save } from "lucide-react"
 import type { KnowledgeNode } from "@/types/knowledge-base"
-import { getKnowledgeNode,updateKnowledgeNode } from "@/lib/api"
+import { getKnowledgeNode,updateKnowledgeNode } from "@/lib/api/knowledge-node"
 
 type KnowledgeFormProps = {
   nodeId: string

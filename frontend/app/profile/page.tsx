@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen, ArrowLeft, Upload, User, Shield, Key } from "lucide-react"
 import Link from "next/link"
-import UserNav from "@/components/user-nav"
+import UserNav from "@/components/utils/user-nav"
 import { cn } from "@/lib/utils"
 
 // 示例用户数据

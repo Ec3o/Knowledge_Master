@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { login,logout } from "@/lib/api"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
+import { login,logout } from "@/lib/api/login"
 
 export default function LoginPage() {
   const router = useRouter()

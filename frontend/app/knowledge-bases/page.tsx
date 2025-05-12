@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Plus, Search, BookMarked, Calendar, Users, Loader2 } from 'lucide-react'
-import UserNav from "@/components/user-nav"
-import { ThemeToggle } from "@/components/theme-toggle"
+import UserNav from "@/components/utils/user-nav"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { getKnowledgeBases, createKnowledgeBase } from "@/lib/api"
+import { getKnowledgeBases, createKnowledgeBase } from "@/lib/api/knowledge-base"
 import { KnowledgeBase } from "@/types/knowledge-base"
 import {
   Dialog,

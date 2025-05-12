@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
 import { BookOpen, ArrowLeft, Moon, Sun, BellRing, Globe, Key, Palette, Bell, Languages, Lock } from "lucide-react"
 import Link from "next/link"
-import UserNav from "@/components/user-nav"
+import UserNav from "@/components/utils/user-nav"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 

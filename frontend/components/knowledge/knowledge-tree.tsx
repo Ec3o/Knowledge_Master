@@ -30,31 +30,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { getKnowledgeBaseWithTree, createKnowledgeNode, updateKnowledgeNode } from "@/lib/api"
-
-// 使用新的接口定义
-export interface KnowledgeBase {
-  id: string
-  name: string
-  description: string
-  owner_id: string
-  created_at: string
-  updated_at: string
-  is_public?: boolean
-  cover_image_url?: string
-}
-
-export interface KnowledgeNode {
-  id: string
-  kb_id?: string
-  parent_id?: string | null
-  type: "folder" | "file"
-  name: string
-  content?: string
-  children?: KnowledgeNode[]
-  created_at?: string
-  updated_at?: string
-}
+import { getKnowledgeBaseWithTree } from "@/lib/api/knowledge-tree"
+import { createKnowledgeNode, updateKnowledgeNode } from "@/lib/api/knowledge-node"
+import { KnowledgeNode } from "@/types/knowledge-node"
 
 export interface KnowledgeTreeResponse {
   id: string

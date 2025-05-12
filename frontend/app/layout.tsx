@@ -1,6 +1,6 @@
 import type React from "react"
 import { CustomToaster } from "@/components/ui/custom-toaster"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 import "./globals.css"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

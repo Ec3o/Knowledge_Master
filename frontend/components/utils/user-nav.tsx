@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, User } from 'lucide-react'
 import Link from "next/link"
-import { ThemeToggle } from "./theme-toggle"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { getUserInfo, logout } from "@/lib/api"
+import { getUserInfo } from "@/lib/api/user"
+import { logout } from '@/lib/api/login'
 import type { UserData } from "@/types/user"
 
 export default function UserNav() {
