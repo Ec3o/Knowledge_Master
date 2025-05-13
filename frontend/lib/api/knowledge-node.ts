@@ -43,7 +43,7 @@ export async function updateKnowledgeNode(
     return response.json()
   }
 
-  export async function createKnowledgeNode(
+export async function createKnowledgeNode(
     kbId: string,
     node: {
       parent_id?: string | null
@@ -71,3 +71,21 @@ export async function updateKnowledgeNode(
   
     return response.json()
   }
+
+export async function deleteKnowledgeNode(kbId: string, nodeId: string): Promise<void> {
+    const token = localStorage.getItem("token")
+    if (!token) throw new Error("未登录")
+
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/nodes/${nodeId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "删除节点失败")
+    }
+    return response.json()
+}

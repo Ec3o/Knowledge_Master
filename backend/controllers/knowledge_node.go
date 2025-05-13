@@ -87,3 +87,37 @@ func UpdateNodeData(c *gin.Context) {
 		"data":    updatedNode,
 	})
 }
+
+func DeleteNodeData(c *gin.Context) {
+	kbID := c.Param("kb_id")
+	nodeID := c.Param("node_id")
+	userID := c.GetString("userID")
+	hasPermission, err := models.CheckKBPermission(config.DB, kbID, userID, 0)
+	if !hasPermission {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "failed",
+			"message": "permission denied",
+			"data":    nil,
+		})
+	}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+	err = models.DeleteKnowledgeNode(config.DB, kbID, nodeID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Deleted Knowledge Node " + nodeID,
+		"data":    nil,
+	})
+}

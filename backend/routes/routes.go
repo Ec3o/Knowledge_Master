@@ -21,10 +21,13 @@ func SetupRoutes() *gin.Engine {
 		server.GET("/knowledge-bases", controllers.GetUserKnowledgeBases)
 		server.POST("/knowledge-bases", controllers.CreateKnowledgeBase)
 		server.GET("/knowledge-bases/:kb_id", controllers.GetKnowledgeBaseByID)
+		server.PUT("/knowledge-bases/:kb_id", controllers.UpdateKnowledgeBase)
+		server.DELETE("/knowledge-bases/:kb_id", controllers.DeleteKnowledgeBase)
 		server.GET("/knowledge-bases/:kb_id/tree", controllers.GetKnowledgeTree)
 		server.POST("/knowledge-bases/:kb_id/tree", controllers.AddKnowledgeNode)
 		server.GET("/knowledge-bases/:kb_id/nodes/:node_id", controllers.GetNodeData)
 		server.PUT("/knowledge-bases/:kb_id/nodes/:node_id", controllers.UpdateNodeData)
+		server.DELETE("/knowledge-bases/:kb_id/nodes/:node_id", controllers.DeleteNodeData)
 	}
 	return r
 }

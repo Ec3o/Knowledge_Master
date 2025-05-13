@@ -31,15 +31,9 @@ import {
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getKnowledgeBaseWithTree } from "@/lib/api/knowledge-tree"
-import { createKnowledgeNode, updateKnowledgeNode } from "@/lib/api/knowledge-node"
+import { createKnowledgeNode, updateKnowledgeNode,deleteKnowledgeNode } from "@/lib/api/knowledge-node"
 import { KnowledgeNode } from "@/types/knowledge-node"
-
-export interface KnowledgeTreeResponse {
-  id: string
-  name: string
-  description: string
-  treeData: KnowledgeNode[]
-}
+import { KnowledgeTreeResponse } from "@/types/knowledge-tree"
 
 type TreeNodeProps = {
   node: KnowledgeNode
@@ -484,19 +478,14 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
             size="sm"
             onClick={async () => {
               try {
-                // 这里应该调用API删除节点
-                // 目前API中没有提供删除节点的方法，需要添加
-
-                // 更新本地树数据
+                const reponse = await deleteKnowledgeNode(kbId, nodeId)
                 const updatedTreeData = deleteNodeFromTree(localTreeData, nodeId)
                 setLocalTreeData(updatedTreeData)
 
-                // 如果删除的是当前选中的节点，清除选中状态
                 if (selectedNode === nodeId) {
                   setSelectedNode(null)
                 }
 
-                // 从API获取最新的树数据
                 await refreshTreeData()
 
                 toast({

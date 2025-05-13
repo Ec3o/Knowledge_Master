@@ -80,3 +80,74 @@ func GetKnowledgeBaseByID(c *gin.Context) {
 		"data":    kb,
 	})
 }
+
+func UpdateKnowledgeBase(c *gin.Context) {
+	kbID := c.Param("kb_id")
+	userID := c.GetString("userID")
+	hasPermission, err := models.CheckKBPermission(config.DB, kbID, userID, 0)
+	if !hasPermission {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "failed",
+			"message": "permission denied",
+			"data":    nil,
+		})
+	}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+	var input struct {
+		Name        string `json:"name" binding:"required"`
+		Description string `json:"description"`
+	}
+	kb, err := models.UpdateKnowledgeBase(config.DB, kbID, input.Name, input.Description, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "failed",
+			"message": "Failed to create knowledge base",
+			"error":   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Knowledge base modified",
+		"data":    kb,
+	})
+}
+
+func DeleteKnowledgeBase(c *gin.Context) {
+	kbID := c.Param("kb_id")
+	userID := c.GetString("userID")
+	hasPermission, err := models.CheckKBPermission(config.DB, kbID, userID, 0)
+	if !hasPermission {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  "failed",
+			"message": "permission denied",
+			"data":    nil,
+		})
+	}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+	err = models.DeleteKnowledgeBase(config.DB, kbID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Deleted Knowledge Base " + kbID,
+		"data":    nil,
+	})
+}

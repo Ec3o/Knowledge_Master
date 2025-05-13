@@ -1,35 +1,67 @@
+"use client"
+
+import { useState,useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { LogIn, UserPlus, BookOpen, BrainCircuit, Database, Share2 } from "lucide-react"
 import Link from "next/link"
+import UserNav from "@/components/utils/user-nav"
 import { Card, CardContent } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
+import { getUserInfo } from "@/lib/api/user";
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        await getUserInfo();
+        setIsLoggedIn(true);
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
   return (
     <main className="flex min-h-screen flex-col">
-      <header className="border-b bg-background">
-        <div className="container flex h-16 items-center px-4">
-          <div className="flex items-center">
-            <BookOpen className="mr-2 h-6 w-6" />
-            <h1 className="text-2xl font-bold">Knowledge Universe</h1>
-          </div>
-          <div className="ml-auto flex items-center space-x-4">
-            <ThemeToggle />
-            <Button asChild variant="ghost">
-              <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4" />
-                登录
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/register">
-                <UserPlus className="mr-2 h-4 w-4" />
-                注册
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      {isLoggedIn ? (
+              <header className="border-b">
+                <div className="container flex h-16 items-center px-4">
+                  <Link href="/knowledge-bases" className="flex items-center">
+                    <BookOpen className="mr-2 h-6 w-6" />
+                    <h1 className="text-2xl font-bold">Knowledge Universe</h1>
+                  </Link>
+                  <div className="ml-auto">
+                    <UserNav />
+                  </div>
+                </div>
+              </header>
+            ) : (
+              <header className="border-b bg-background">
+                <div className="container flex h-16 items-center px-4">
+                  <div className="flex items-center">
+                    <BookOpen className="mr-2 h-6 w-6" />
+                    <h1 className="text-2xl font-bold">Knowledge Universe</h1>
+                  </div>
+                  <div className="ml-auto flex items-center space-x-4">
+                    <ThemeToggle />
+                    <Button asChild variant="ghost">
+                      <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        登录
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/register">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        注册
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </header>
+            )}
 
       <div className="flex-1 grid-background">
         <div className="container flex-1 items-center justify-center py-12 md:py-24 lg:py-32">
@@ -39,18 +71,29 @@ export default function Home() {
               按照树形结构组织您的知识，轻松录入概念、公式和例题，一键转换为思维导图
             </p>
             <div className="flex flex-wrap justify-center gap-4">
+            {isLoggedIn ? (
               <Button asChild size="lg">
-                <Link href="/register">
-                  <UserPlus className="mr-2 h-5 w-5" />
-                  开始使用
+                <Link href="/knowledge-bases">
+                  <BookOpen className="mr-2 h-5 w-5" />
+                  前往知识库
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/login">
-                  <LogIn className="mr-2 h-5 w-5" />
-                  已有账号
-                </Link>
-              </Button>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button asChild size="lg">
+                  <Link href="/register">
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    开始使用
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/login">
+                    <LogIn className="mr-2 h-5 w-5" />
+                    已有账号
+                  </Link>
+                </Button>
+              </div>
+            )}
             </div>
           </div>
 

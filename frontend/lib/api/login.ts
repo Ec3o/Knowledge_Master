@@ -16,5 +16,6 @@ export async function login(email: string, password: string) {
   }
 export function logout() {
     localStorage.removeItem("token")
-    localStorage.removeItem("user")
+    localStorage.removeItem("user_cache")
+    
   }

@@ -5,13 +5,17 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Plus, Search, BookMarked, Calendar, Users, Loader2 } from 'lucide-react'
+import { BookOpen, Plus, Search, Calendar, Loader2 } from "lucide-react"
 import UserNav from "@/components/utils/user-nav"
-import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { getKnowledgeBases, createKnowledgeBase } from "@/lib/api/knowledge-base"
-import { KnowledgeBase } from "@/types/knowledge-base"
+import {
+  getKnowledgeBases,
+  createKnowledgeBase,
+  updateKnowledgeBase,
+  deleteKnowledgeBase,
+} from "@/lib/api/knowledge-base"
+import type { KnowledgeBase } from "@/types/knowledge-base"
 import {
   Dialog,
   DialogContent,
@@ -34,6 +38,15 @@ export default function KnowledgeBasesPage() {
   const [newKbDescription, setNewKbDescription] = useState("")
   const { toast } = useToast()
   const router = useRouter()
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingKb, setEditingKb] = useState<KnowledgeBase | null>(null)
+  const [editKbName, setEditKbName] = useState("")
+  const [editKbDescription, setEditKbDescription] = useState("")
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deletingKb, setDeletingKb] = useState<KnowledgeBase | null>(null)
 
   useEffect(() => {
     async function fetchKnowledgeBases() {
@@ -74,12 +87,12 @@ export default function KnowledgeBasesPage() {
     try {
       setIsCreating(true)
       const newKb = await createKnowledgeBase(newKbName, newKbDescription)
-      
+
       setKnowledgeBases((prev) => [...prev, newKb])
       setIsCreateDialogOpen(false)
       setNewKbName("")
       setNewKbDescription("")
-      
+
       toast({
         title: "创建成功",
         description: `知识库 "${newKb.name}" 已创建`,
@@ -87,7 +100,7 @@ export default function KnowledgeBasesPage() {
       })
       console.log("新创建的知识库:", newKb)
       // 可选：直接导航到新创建的知识库
-      router.push(`/knowledge-bases/${newKb.kb_id}`)
+      // router.push(`/knowledge-bases/${newKb.kb_id}`)
     } catch (error) {
       console.error("创建知识库失败:", error)
       toast({
@@ -97,6 +110,80 @@ export default function KnowledgeBasesPage() {
       })
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleEditKnowledgeBase = (kb: KnowledgeBase) => {
+    setEditingKb(kb)
+    setEditKbName(kb.name)
+    setEditKbDescription(kb.description || "")
+    setIsEditDialogOpen(true)
+  }
+
+  const handleUpdateKnowledgeBase = async () => {
+    if (!editingKb || !editKbName.trim()) {
+      toast({
+        title: "无法更新知识库",
+        description: "知识库名称不能为空",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsEditing(true)
+      const updatedKb = await updateKnowledgeBase(editingKb.kb_id, editKbName, editKbDescription)
+
+      setKnowledgeBases((prev) => prev.map((kb) => (kb.kb_id === updatedKb.kb_id ? updatedKb : kb)))
+      setIsEditDialogOpen(false)
+
+      toast({
+        title: "更新成功",
+        description: `知识库 "${updatedKb.name}" 已更新`,
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("更新知识库失败:", error)
+      toast({
+        title: "更新知识库失败",
+        description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
+        variant: "destructive",
+      })
+    } finally {
+      setIsEditing(false)
+    }
+  }
+
+  const handleDeletePrompt = (kb: KnowledgeBase) => {
+    setDeletingKb(kb)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteKnowledgeBase = async () => {
+    if (!deletingKb) return
+
+    try {
+      setIsDeleting(true)
+      await deleteKnowledgeBase(deletingKb.kb_id)
+
+      setKnowledgeBases((prev) => prev.filter((kb) => kb.kb_id !== deletingKb.kb_id))
+      setIsDeleteDialogOpen(false)
+
+      toast({
+        title: "删除成功",
+        description: `知识库 "${deletingKb.name}" 已删除`,
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("删除知识库失败:", error)
+      toast({
+        title: "删除知识库失败",
+        description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeletingKb(null)
     }
   }
 
@@ -157,9 +244,62 @@ export default function KnowledgeBasesPage() {
                         但需要API支持这些数据 */}
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <Button asChild className="w-full">
-                    <Link href={`/knowledge-bases/${kb.kb_id}`}>打开知识库</Link>
+                <CardFooter className="flex justify-between gap-2">
+                  <Button asChild variant="default" className="flex-1">
+                    <Link href={`/knowledge-bases/${kb.kb_id}`}>打开</Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleEditKnowledgeBase(kb)
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-pencil"
+                    >
+                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    </svg>
+                    <span className="sr-only">编辑</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleDeletePrompt(kb)
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-trash-2"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      <line x1="10" x2="10" y1="11" y2="17" />
+                      <line x1="14" x2="14" y1="11" y2="17" />
+                    </svg>
+                    <span className="sr-only">删除</span>
                   </Button>
                 </CardFooter>
               </Card>
@@ -214,6 +354,78 @@ export default function KnowledgeBasesPage() {
                 </>
               ) : (
                 "创建"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>编辑知识库</DialogTitle>
+            <DialogDescription>修改知识库的名称和描述</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-kb-name">知识库名称</Label>
+              <Input
+                id="edit-kb-name"
+                value={editKbName}
+                onChange={(e) => setEditKbName(e.target.value)}
+                placeholder="输入知识库名称"
+                autoFocus
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-kb-description">描述（可选）</Label>
+              <Textarea
+                id="edit-kb-description"
+                value={editKbDescription}
+                onChange={(e) => setEditKbDescription(e.target.value)}
+                placeholder="简要描述此知识库的内容和用途"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isEditing}>
+              取消
+            </Button>
+            <Button onClick={handleUpdateKnowledgeBase} disabled={isEditing}>
+              {isEditing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  更新中...
+                </>
+              ) : (
+                "更新"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除知识库</DialogTitle>
+            <DialogDescription>
+              您确定要删除知识库 "{deletingKb?.name}" 吗？此操作无法撤销，所有相关的知识节点将被永久删除。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteKnowledgeBase} disabled={isDeleting}>
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  删除中...
+                </>
+              ) : (
+                "确认删除"
               )}
             </Button>
           </DialogFooter>

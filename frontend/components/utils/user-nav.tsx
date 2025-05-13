@@ -50,7 +50,14 @@ export default function UserNav() {
 
   const handleLogout = () => {
     logout()
-    router.push('/login')
+    toast({
+      title: "退出登录",
+      description: "您已成功退出登录",
+      variant: "default",
+    })
+    setTimeout(() => {
+      router.push('/')
+    }, 1000)
   }
 
   if (loading) {

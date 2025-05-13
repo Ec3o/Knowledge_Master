@@ -197,3 +197,39 @@ func UpdateKnowledgeNode(db *sql.DB, kbID, nodeID, title, content string) (*Know
 func CheckKBPermission(db *sql.DB, kbID string, userID string, level int) (bool, error) {
 	return true, nil
 }
+
+func DeleteKnowledgeNode(db *sql.DB, kbID string, nodeID string) error {
+	// 先删除所有子节点
+	deleteChildrenQuery := `
+        WITH RECURSIVE node_tree AS (
+            SELECT node_id
+            FROM knowledge_nodes
+            WHERE kb_id = $1 AND parent_id = $2
+            
+            UNION ALL
+            
+            SELECT n.node_id
+            FROM knowledge_nodes n
+            JOIN node_tree t ON n.parent_id = t.node_id
+            WHERE n.kb_id = $1
+        )
+        DELETE FROM knowledge_nodes
+        WHERE node_id IN (SELECT node_id FROM node_tree)
+    `
+	_, err := db.Exec(deleteChildrenQuery, kbID, nodeID)
+	if err != nil {
+		return fmt.Errorf("failed to delete children nodes: %w", err)
+	}
+
+	// 再删除当前节点
+	deleteNodeQuery := `
+        DELETE FROM knowledge_nodes
+        WHERE kb_id = $1 AND node_id = $2
+    `
+	_, err = db.Exec(deleteNodeQuery, kbID, nodeID)
+	if err != nil {
+		return fmt.Errorf("failed to delete node: %w", err)
+	}
+
+	return nil
+}
