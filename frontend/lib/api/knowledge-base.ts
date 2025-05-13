@@ -4,7 +4,7 @@ export async function getKnowledgeBases(): Promise<KnowledgeBase[]> {
     const token = localStorage.getItem("token")
     if (!token) throw new Error("未登录")
   
-    const response = await fetch(`${API_BASE}/api/knowledge-bases`, {
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -22,7 +22,7 @@ export async function createKnowledgeBase(name: string, description = ""): Promi
     const token = localStorage.getItem("token")
     if (!token) throw new Error("未登录")
   
-    const response = await fetch(`${API_BASE}/api/knowledge-bases`, {
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export async function getKnowledgeBase(kbId: string): Promise<KnowledgeBase> {
     const token = localStorage.getItem("token")
     if (!token) throw new Error("未登录")
   
-    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}`, {
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -62,7 +62,7 @@ export async function updateKnowledgeBase(kbId: string, name: string, descriptio
     const token = localStorage.getItem("token")
     if (!token) throw new Error("未登录")
 
-    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}`, {
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -83,7 +83,7 @@ export async function deleteKnowledgeBase(kbId: string): Promise<void> {
     const token = localStorage.getItem("token")
     if (!token) throw new Error("未登录")
 
-    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}`, {
+    const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -103,6 +103,14 @@ func UpdateKnowledgeBase(c *gin.Context) {
 		Name        string `json:"name" binding:"required"`
 		Description string `json:"description"`
 	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  "failed",
+			"message": "Invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
 	kb, err := models.UpdateKnowledgeBase(config.DB, kbID, input.Name, input.Description, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

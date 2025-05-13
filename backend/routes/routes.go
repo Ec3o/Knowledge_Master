@@ -9,25 +9,46 @@ import (
 func SetupRoutes() *gin.Engine {
 	r := gin.Default()
 	controllers.SetupCORS(r)
-	auth := r.Group("/api")
+
+	public := r.Group("/api")
 	{
-		auth.POST("/register", controllers.Register)
-		auth.POST("/login", controllers.Login)
+		public.POST("/register", controllers.Register)
+		public.POST("/login", controllers.Login)
 	}
-	server := r.Group("/api")
-	server.Use(middleware.AuthMiddleware())
+
+	api := r.Group("/api")
+	api.Use(middleware.AuthMiddleware())
 	{
-		server.GET("/user/info", controllers.GetUserInfo)
-		server.GET("/knowledge-bases", controllers.GetUserKnowledgeBases)
-		server.POST("/knowledge-bases", controllers.CreateKnowledgeBase)
-		server.GET("/knowledge-bases/:kb_id", controllers.GetKnowledgeBaseByID)
-		server.PUT("/knowledge-bases/:kb_id", controllers.UpdateKnowledgeBase)
-		server.DELETE("/knowledge-bases/:kb_id", controllers.DeleteKnowledgeBase)
-		server.GET("/knowledge-bases/:kb_id/tree", controllers.GetKnowledgeTree)
-		server.POST("/knowledge-bases/:kb_id/tree", controllers.AddKnowledgeNode)
-		server.GET("/knowledge-bases/:kb_id/nodes/:node_id", controllers.GetNodeData)
-		server.PUT("/knowledge-bases/:kb_id/nodes/:node_id", controllers.UpdateNodeData)
-		server.DELETE("/knowledge-bases/:kb_id/nodes/:node_id", controllers.DeleteNodeData)
+		user := api.Group("/user")
+		{
+			user.GET("/info", controllers.GetUserInfo)
+			user.GET("/profile", controllers.GetUserProfile)
+			user.PUT("/profile", controllers.UpdateUserProfile)
+		}
+
+		kb := api.Group("/knowledge-bases")
+		{
+			kb.GET("/", controllers.GetUserKnowledgeBases)
+			kb.POST("/", controllers.CreateKnowledgeBase)
+
+			specificKb := kb.Group("/:kb_id")
+			{
+				specificKb.GET("/", controllers.GetKnowledgeBaseByID)
+				specificKb.PUT("/", controllers.UpdateKnowledgeBase)
+				specificKb.DELETE("/", controllers.DeleteKnowledgeBase)
+
+				specificKb.GET("/tree", controllers.GetKnowledgeTree)
+				specificKb.POST("/tree", controllers.AddKnowledgeNode)
+
+				nodes := specificKb.Group("/nodes")
+				{
+					nodes.GET("/:node_id", controllers.GetNodeData)
+					nodes.PUT("/:node_id", controllers.UpdateNodeData)
+					nodes.DELETE("/:node_id", controllers.DeleteNodeData)
+				}
+			}
+		}
 	}
+
 	return r
 }

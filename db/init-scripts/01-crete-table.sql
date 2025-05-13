@@ -37,7 +37,7 @@ CREATE TABLE knowledge_nodes (
     node_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     kb_id UUID REFERENCES knowledge_bases(kb_id) ON DELETE CASCADE,
     parent_id UUID REFERENCES knowledge_nodes(node_id) ON DELETE CASCADE,
-    node_type VARCHAR(20) NOT NULL, -- folder/file
+    node_type VARCHAR(20) NOT NULL,
     title VARCHAR(255) NOT NULL,
     content TEXT,
     sort_order INTEGER DEFAULT 0,
@@ -45,6 +45,18 @@ CREATE TABLE knowledge_nodes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 用户资料表
+CREATE TABLE user_profiles (
+    user_id UUID PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+    username VARCHAR(100), 
+    description TEXT,
+    website VARCHAR(255),
+    avatar_uri TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 创建索引优化查询
 CREATE INDEX idx_nodes_kb ON knowledge_nodes(kb_id);
 CREATE INDEX idx_nodes_parent ON knowledge_nodes(parent_id);
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
