@@ -71,7 +71,11 @@ export default function SettingsPage() {
     }))
   }
 
-  const handleSwitchChange = (section: string, key: string, checked: boolean) => {
+  const handleSwitchChange = (
+    section: "appearance" | "notifications" | "privacy",
+    key: string,
+    checked: boolean
+  ) => {
     setSettings((prev) => ({
       ...prev,
       [section]: {

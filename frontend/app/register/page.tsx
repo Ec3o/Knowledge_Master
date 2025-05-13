@@ -77,7 +77,7 @@ export default function RegisterPage() {
       </div>
       <div className="mb-8 flex items-center text-2xl font-bold">
         <BookOpen className="mr-2 h-6 w-6" />
-        💫Knowledge Universe
+        <Link href={"/"} >💫Knowledge Universe </Link>
       </div>
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm">
         <CardHeader>

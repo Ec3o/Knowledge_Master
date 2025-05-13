@@ -22,6 +22,7 @@ func SetupRoutes() *gin.Engine {
 		user := api.Group("/user")
 		{
 			user.GET("/info", controllers.GetUserInfo)
+			user.POST("/avatar", controllers.UploadAvatar)
 			user.GET("/profile", controllers.GetUserProfile)
 			user.PUT("/profile", controllers.UpdateUserProfile)
 		}

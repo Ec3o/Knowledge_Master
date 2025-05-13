@@ -6,10 +6,11 @@ import (
 )
 
 type User struct {
-	UserID   string `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Username string `json:"username"`
+	UserID    string `json:"id"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Username  string `json:"username"`
+	AvatarURI string `json:"avatar_uri"`
 }
 
 type UserProfile struct {
@@ -44,30 +45,39 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 
 func GetUserByID(db *sql.DB, userID string) (*User, error) {
 	query := `
-		SELECT user_id, email, username 
-		FROM users 
+		SELECT user_id, email, username , avatar_uri
+		FROM user_profiles  
 		WHERE user_id = $1
 	`
 	row := db.QueryRow(query, userID)
 
 	user := &User{}
-	err := row.Scan(&user.UserID, &user.Email, &user.Username)
+	err := row.Scan(&user.UserID, &user.Email, &user.Username, &user.AvatarURI)
 	if err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
-
+func CreateUserProfile(db *sql.DB, userID string, email string, username string, description string, website string, avatar_uri string) error {
+	query := `
+		INSERT INTO user_profiles (user_id, username,email,description,website,avatar_uri) VALUES ($1,$2,$3,$4,$5,$6)
+	`
+	_, err := db.Exec(query, userID, email, username, description, website, avatar_uri)
+	if err != nil {
+		return fmt.Errorf("failed to create empty profile: %w", err)
+	}
+	return nil
+}
 func GetUserProfile(db *sql.DB, userID string) (*UserProfile, error) {
 	query := `
-		SELECT user_id, username, description,website,avatar_uri
+		SELECT user_id, username,email,description,website,avatar_uri
 		FROM user_profiles 
 		WHERE user_id = $1
 	`
 	row := db.QueryRow(query, userID)
 	Profile := &UserProfile{}
-	err := row.Scan(&Profile.UserID, &Profile.Username, &Profile.Description, &Profile.Website, &Profile.AvatarURI)
+	err := row.Scan(&Profile.UserID, &Profile.Username, &Profile.Email, &Profile.Description, &Profile.Website, &Profile.AvatarURI)
 	if err != nil {
 		return nil, err
 	}

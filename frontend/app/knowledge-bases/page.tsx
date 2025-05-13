@@ -193,7 +193,7 @@ export default function KnowledgeBasesPage() {
         <div className="container flex h-16 items-center px-4">
           <div className="flex items-center">
             <BookOpen className="mr-2 h-6 w-6" />
-            <h1 className="text-2xl font-bold">Knowledge Universe</h1>
+            <Link href={"/"} ><strong>💫Knowledge Universe </strong></Link>
           </div>
           <div className="ml-auto flex items-center space-x-4">
             <UserNav />

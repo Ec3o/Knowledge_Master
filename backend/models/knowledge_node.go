@@ -21,6 +21,7 @@ type KnowledgeNode struct {
 
 // 获取知识库的树形结构
 func GetKnowledgeTree(db *sql.DB, kbID string) ([]*KnowledgeNode, error) {
+	//goland:noinspection SqlNoDataSourceInspection,SqlResolve
 	query := `
 		WITH RECURSIVE node_tree AS (
 			SELECT 

@@ -98,8 +98,8 @@ export default function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              {user.avatar ? (
-                <AvatarImage src={user.avatar} alt="用户头像" />
+              {user.avatar_uri ? (
+                <AvatarImage src={user.avatar_uri} alt="用户头像" />
               ) : (
                 <AvatarImage src={`https://ui-avatars.com/api/?name=${user.username}&background=random`} />
               )}

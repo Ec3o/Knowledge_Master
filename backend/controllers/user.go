@@ -4,13 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"knowledge_master_backend/config"
 	"knowledge_master_backend/models"
+	"knowledge_master_backend/utils"
 	"net/http"
 )
 
 type UserInfoResponse struct {
-	UserID   string `json:"user_id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	UserID    string `json:"user_id"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	AvatarURI string `json:"avatar_uri"`
 }
 
 func GetUserInfo(c *gin.Context) {
@@ -39,9 +41,10 @@ func GetUserInfo(c *gin.Context) {
 		Status:  "success",
 		Message: "User successfully retrieved",
 		Data: UserInfoResponse{
-			UserID:   user.UserID,
-			Username: user.Username,
-			Email:    user.Email,
+			UserID:    user.UserID,
+			Username:  user.Username,
+			Email:     user.Email,
+			AvatarURI: user.AvatarURI,
 		},
 	})
 }
@@ -62,6 +65,7 @@ func GetUserProfile(c *gin.Context) {
 			Message: "User not found",
 			Data:    nil,
 		})
+		return
 	}
 	c.JSON(http.StatusOK, apiResponse{
 		Status:  "success",
@@ -104,13 +108,25 @@ func UpdateUserProfile(c *gin.Context) {
 }
 
 func UploadAvatar(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusInternalServerError, apiResponse{
+	avatar_image, err := c.FormFile("avatar")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apiResponse{
 			Status:  "failed",
-			Message: "Authentication failed",
+			Message: "Invalid request body",
 			Data:    nil,
 		})
 	}
-
+	url, err := utils.UploadAvatarToOSS(avatar_image)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, apiResponse{
+			Status:  "failed",
+			Message: "Upload avatar failed",
+			Data:    nil,
+		})
+	}
+	c.JSON(http.StatusOK, apiResponse{
+		Status:  "success",
+		Message: "Upload avatar successfully",
+		Data:    url,
+	})
 }

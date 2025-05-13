@@ -30,7 +30,7 @@ export default function Home() {
                 <div className="container flex h-16 items-center px-4">
                   <Link href="/knowledge-bases" className="flex items-center">
                     <BookOpen className="mr-2 h-6 w-6" />
-                    <h1 className="text-2xl font-bold">Knowledge Universe</h1>
+                    <Link href={"/"} ><strong>💫Knowledge Universe </strong></Link>
                   </Link>
                   <div className="ml-auto">
                     <UserNav />

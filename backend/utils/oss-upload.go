@@ -70,6 +70,9 @@ func initOSS() error {
 
 // UploadAvatarToOSS 上传头像到OSS并返回URL
 func UploadAvatarToOSS(fileHeader *multipart.FileHeader) (string, error) {
+	if err := initOSS(); err != nil {
+		return "", err
+	}
 	// 1. 打开文件
 	file, err := fileHeader.Open()
 	if err != nil {

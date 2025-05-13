@@ -67,7 +67,15 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
-
+	err = models.CreateUserProfile(config.DB, user.UserID, user.Username, user.Email, "是否尝试留下些什么...", "http://example.com", "https://avatar.iran.liara.run/public")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, apiResponse{
+			Status:  "failed",
+			Message: "无法创建用户资料",
+			Data:    nil,
+		})
+		return
+	}
 	user.Password = "******"
 	c.JSON(http.StatusCreated, apiResponse{
 		Status:  "success",

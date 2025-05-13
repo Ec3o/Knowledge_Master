@@ -49,6 +49,7 @@ CREATE TABLE knowledge_nodes (
 CREATE TABLE user_profiles (
     user_id UUID PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     username VARCHAR(100), 
+    email VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,
     website VARCHAR(255),
     avatar_uri TEXT,
