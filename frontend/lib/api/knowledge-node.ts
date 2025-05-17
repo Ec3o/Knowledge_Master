@@ -1,4 +1,4 @@
-import { KnowledgeNode } from "@/types/knowledge-node"
+import { KnowledgeNode, NodeType } from "@/types/knowledge-node"
 import { API_BASE } from "@/lib/api/utils"
 export async function getKnowledgeNode(kbId: string, nodeId: string): Promise<KnowledgeNode> {
     const token = localStorage.getItem("token")
@@ -47,7 +47,7 @@ export async function createKnowledgeNode(
     kbId: string,
     node: {
       parent_id?: string | null
-      type: "folder" | "file"
+      type: NodeType
       name: string
       content?: string
     },

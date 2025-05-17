@@ -29,6 +29,7 @@ func SetupRoutes() *gin.Engine {
 
 		kb := api.Group("/knowledge-bases")
 		{
+			
 			kb.GET("/", controllers.GetUserKnowledgeBases)
 			kb.POST("/", controllers.CreateKnowledgeBase)
 

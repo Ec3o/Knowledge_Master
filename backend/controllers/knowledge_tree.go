@@ -34,7 +34,7 @@ func AddKnowledgeNode(c *gin.Context) {
 
 	var input struct {
 		ParentID string `json:"parent_id"`
-		Type     string `json:"type" binding:"required,oneof=folder file concept formula algorithm theorem example code_snippet pseudo_code code_explanation reference video slide note question custom"`
+		Type     string `json:"type" binding:"required"`
 		Title    string `json:"name" binding:"required"`
 		Content  string `json:"content"`
 	}

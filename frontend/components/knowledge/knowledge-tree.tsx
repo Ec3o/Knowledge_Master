@@ -15,6 +15,19 @@ import {
   X,
   Loader2,
   RefreshCw,
+  HelpCircle,
+  SquarePen,
+  BookMarked,
+  BookOpen,
+  Lightbulb,
+  Cpu,
+  Puzzle,
+  Flashlight,
+  Code,
+  GraduationCap,
+  Sigma,
+  Fingerprint,
+  Workflow,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -28,11 +41,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { NodeType } from "@/types/knowledge-node"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getKnowledgeBaseWithTree } from "@/lib/api/knowledge-tree"
 import { createKnowledgeNode, updateKnowledgeNode,deleteKnowledgeNode } from "@/lib/api/knowledge-node"
-import { KnowledgeNode } from "@/types/knowledge-node"
+import { KnowledgeNode,nodeTypeMap } from "@/types/knowledge-node"
 import { KnowledgeTreeResponse } from "@/types/knowledge-tree"
 
 type TreeNodeProps = {
@@ -131,7 +145,7 @@ const TreeNodeComponent = ({
     setNewName(node.name)
     setIsRenaming(false)
   }
-
+  
   return (
     <div>
       <div
@@ -158,7 +172,10 @@ const TreeNodeComponent = ({
               <Folder className="h-4 w-4 text-muted-foreground" />
             )
           ) : (
-            <File className="h-4 w-4 text-muted-foreground" />
+            nodeTypeMap[node.type as NodeType]?.icon && (() => {
+              const Icon = nodeTypeMap[node.type as NodeType].icon
+              return <Icon className="h-4 w-4 text-muted-foreground" />
+            })()
           )}
         </div>
 
@@ -243,7 +260,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [newNodeParent, setNewNodeParent] = useState<string | null>(null)
   const [newNodeName, setNewNodeName] = useState("")
-  const [newNodeType, setNewNodeType] = useState<"file" | "folder">("file")
+  const [newNodeType, setNewNodeType] = useState<NodeType>("file")
   const [isCreating, setIsCreating] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
@@ -301,11 +318,11 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
         setExpanded(newExpanded)
       }
 
-      toast({
-        title: "刷新成功",
-        description: "知识树数据已更新",
-        variant: "default",
-      })
+      // toast({
+      //   title: "刷新成功",
+      //   description: "知识树数据已更新",
+      //   variant: "default",
+      // })
     } catch (error) {
       console.error("刷新知识树失败:", error)
       toast({
@@ -425,7 +442,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       // 显示成功消息
       toast({
         title: "创建成功",
-        description: `已创建${newNodeType === "folder" ? "文件夹" : "知识点"} "${newNodeName}"`,
+        description: `已创建${newNodeType} "${newNodeName}"`,
         variant: "default",
       })
 
@@ -608,29 +625,24 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
               />
             </div>
             <div className="grid gap-2">
-              <Label>节点类型</Label>
-              <RadioGroup
-                value={newNodeType}
-                onValueChange={(value) => setNewNodeType(value as "file" | "folder")}
-                className="flex space-x-4"
-                disabled={isCreating}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="file" id="node-type-file" />
-                  <Label htmlFor="node-type-file" className="flex items-center">
-                    <File className="mr-2 h-4 w-4" />
-                    知识点
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="folder" id="node-type-folder" />
-                  <Label htmlFor="node-type-folder" className="flex items-center">
-                    <Folder className="mr-2 h-4 w-4" />
-                    文件夹
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+          <Label>节点类型</Label>
+          <RadioGroup
+            value={newNodeType}
+            onValueChange={(value) => setNewNodeType(value as NodeType)}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" // 响应式网格布局
+            disabled={isCreating}
+          >
+            {Object.entries(nodeTypeMap).map(([type, { icon: Icon, name }]) => (
+              <div key={type} className="flex items-center space-x-2">
+                <RadioGroupItem value={type as NodeType} id={`node-type-${type}`} />
+                <Label htmlFor={`node-type-${type}`} className="flex items-center">
+                  <Icon className="mr-2 h-4 w-4" />
+                  {name}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isCreating}>
