@@ -249,7 +249,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
   const { toast } = useToast()
   const [localTreeData, setLocalTreeData] = useState<KnowledgeNode[]>(treeData || [])
 
-  console.log("KnowledgeTree received treeData:", treeData)
+  console.log("KnowledgeTree received treeData:", localTreeData)
 
   // 初始化展开状态
   useEffect(() => {
@@ -267,7 +267,6 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
     setInitialExpandedState(treeData || [])
     setExpanded(initialExpanded)
-    setLocalTreeData(treeData || [])
   }, [treeData])
 
   // 刷新知识树数据
@@ -408,7 +407,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
       // 准备节点数据
       const nodeData = {
-        parent_id: newNodeParent === "root" ? null : newNodeParent,
+        parent_id: newNodeParent === null ? null : newNodeParent,
         type: newNodeType,
         name: newNodeName,
         content: newNodeType === "file" ? "" : undefined,
@@ -513,6 +512,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
   const handleRenameNode = async (nodeId: string, newName: string) => {
     // 更新本地树数据
     const updatedTreeData = renameNodeInTree(localTreeData, nodeId, newName)
+    console.log("Updated tree data after renaming:", updatedTreeData)
     setLocalTreeData(updatedTreeData)
 
     // 从API获取最新的树数据
@@ -527,7 +527,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
   const handleAddRootNode = () => {
     // 创建一个虚拟的根节点ID
-    setNewNodeParent("root")
+    setNewNodeParent(null);
     setNewNodeName("")
     setNewNodeType("folder") // 默认为文件夹
     setIsAddDialogOpen(true)
@@ -559,7 +559,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
             <span className="text-sm text-muted-foreground">刷新中...</span>
           </div>
         )}
-
+        
         {localTreeData && localTreeData.length > 0 ? (
           localTreeData.map((node) => (
             <TreeNodeComponent
@@ -588,9 +588,9 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{newNodeParent === "root" ? "添加根节点" : "添加子节点"}</DialogTitle>
+            <DialogTitle>{newNodeParent === null ? "添加根节点" : "添加子节点"}</DialogTitle>
             <DialogDescription>
-              {newNodeParent === "root"
+              {newNodeParent === null
                 ? "创建一个新的根级节点"
                 : `在 "${findNodeById(localTreeData, newNodeParent || "")?.name || ""}" 下创建新节点`}
             </DialogDescription>
