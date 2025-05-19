@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.0.0",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -43,6 +44,8 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "dotenv": "^16.5.0",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2",
     "embla-carousel-react": "8.5.1",
     "highlight.js": "^11.11.1",
     "input-otp": "1.4.1",
@@ -54,6 +57,7 @@
     "react-dom": "^19",
     "react-hook-form": "^7.54.1",
     "react-markdown": "^10.1.0",
+    "react-mindmap": "^2.1.6",
     "react-resizable-panels": "^2.1.7",
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "2.15.0",
@@ -61,6 +65,7 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "simple-mind-map": "0.14.0-fix.1",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

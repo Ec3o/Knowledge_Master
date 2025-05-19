@@ -196,9 +196,11 @@ export default function KnowledgeBasePage() {
                   <TabsTrigger value="edit">编辑</TabsTrigger>
                 </TabsList>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
-                    <BrainCircuit className="mr-2 h-4 w-4" />
-                    转为思维导图
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/knowledge-bases/${kbId}/mindmap`}>
+                      <BrainCircuit className="mr-2 h-4 w-4" />
+                      转为思维导图
+                    </Link>
                   </Button>
                 </div>
               </div>
