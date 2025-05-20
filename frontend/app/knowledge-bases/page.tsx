@@ -194,6 +194,7 @@ export default function KnowledgeBasesPage() {
           <div className="flex items-center">
             <BookOpen className="mr-2 h-6 w-6" />
             <Link href={"/"} ><strong>💫Knowledge Universe </strong></Link>
+            <Link href={"/knowledge-bases"} className="ml-10" ><strong>知识库</strong></Link>
           </div>
           <div className="ml-auto flex items-center space-x-4">
             <UserNav />
@@ -203,7 +204,7 @@ export default function KnowledgeBasesPage() {
 
       <div className="container py-6">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">我的知识库</h2>
+          <h2 className="text-2xl font-bold ml-6">我的知识库</h2>
           <div className="flex items-center space-x-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -229,7 +230,7 @@ export default function KnowledgeBasesPage() {
         ) : filteredKnowledgeBases.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredKnowledgeBases.map((kb) => (
-              <Card key={kb.kb_id} className="overflow-hidden">
+              <Card key={kb.kb_id} className="overflow-hidden ml-6">
                 <CardHeader className="pb-3">
                   <CardTitle>{kb.name}</CardTitle>
                   <CardDescription>{kb.description || "无描述"}</CardDescription>
@@ -240,8 +241,6 @@ export default function KnowledgeBasesPage() {
                       <Calendar className="mr-1 h-4 w-4" />
                       更新于 {format(new Date(kb.updated_at), "yyyy-MM-dd")}
                     </div>
-                    {/* 这里可以添加更多信息，如节点数量和协作者数量，
-                        但需要API支持这些数据 */}
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between gap-2">

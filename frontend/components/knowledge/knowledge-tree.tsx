@@ -318,11 +318,11 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
         setExpanded(newExpanded)
       }
 
-      // toast({
-      //   title: "刷新成功",
-      //   description: "知识树数据已更新",
-      //   variant: "default",
-      // })
+      toast({
+        title: "刷新成功",
+        description: "知识树数据已更新",
+        variant: "default",
+      })
     } catch (error) {
       console.error("刷新知识树失败:", error)
       toast({
@@ -424,7 +424,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
       // 准备节点数据
       const nodeData = {
-        parent_id: newNodeParent === null ? null : newNodeParent,
+        parent_id: newNodeParent || null,
         type: newNodeType,
         name: newNodeName,
         content: newNodeType === "file" ? "" : undefined,

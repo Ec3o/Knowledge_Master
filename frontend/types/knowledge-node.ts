@@ -20,8 +20,8 @@ export const nodeTypeMap: Record<NodeType, { icon: React.ComponentType<React.SVG
   folder: { icon: Folder, name: "文件夹" },
   knowledge: { icon: BookOpen, name: "知识点" },
   example: { icon: SquarePen, name: "例题" },
-  formula: { icon: Fingerprint, name: "公式" },
-  algorithm: { icon: Sigma, name: "算法" },
+  formula: { icon: Sigma, name: "公式" },
+  algorithm: { icon: Fingerprint, name: "算法" },
   concept: { icon: Lightbulb, name: "概念" },
   theory: { icon: GraduationCap, name: "理论" },
   procedure: { icon: Workflow, name: "流程" },
@@ -34,7 +34,7 @@ export interface KnowledgeNode {
     id: string;
     kb_id?: string;
     parent_id?: string | null;
-    type: 'folder' | 'file' | 'concept' | 'formula' | 'algorithm' | 'theorem' | 'example' | 'code_snippet' | 'pseudo_code' | 'code_explanation' | 'reference' | 'video' | 'slide' | 'note' | 'question' | 'custom';
+    type: NodeType;
     name: string;
     content?: string;
     children?: KnowledgeNode[];
