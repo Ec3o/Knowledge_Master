@@ -1,3 +1,5 @@
+import { NodeType } from "./knowledge-node";
+
 export interface KnowledgeBase {
   kb_id: string;
   name: string;
@@ -13,7 +15,7 @@ export interface KnowledgeNode {
   id: string;
   kb_id?: string;
   parent_id?: string | null;
-  type: 'folder' | 'file' | 'concept' | 'formula' | 'algorithm' | 'theorem' | 'example' | 'code_snippet' | 'pseudo_code' | 'code_explanation' | 'reference' | 'video' | 'slide' | 'note' | 'question' | 'custom';
+  type: NodeType;
   name: string;
   content?: string;
   children?: KnowledgeNode[];

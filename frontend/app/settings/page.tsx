@@ -12,7 +12,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { BookOpen, ArrowLeft, Moon, Sun, BellRing, Globe, Key, Palette, Bell, Languages, Lock } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { BookOpen, ArrowLeft, Moon, Sun, BellRing, Globe, Key, Palette, Bell, Languages, Lock, Settings,Loader2 } from "lucide-react"
 import Link from "next/link"
 import UserNav from "@/components/utils/user-nav"
 import { cn } from "@/lib/utils"
@@ -20,6 +29,9 @@ import { useTheme } from "next-themes"
 
 // 示例设置数据
 const settingsData = {
+  general: {
+    fastgpt_key: "",
+  },
   appearance: {
     fontSize: "medium",
     reducedMotion: false,
@@ -43,6 +55,7 @@ type SidebarItem = {
 }
 
 const sidebarItems: SidebarItem[] = [
+  { id: "general", icon: <Settings className="h-5 w-5" />, label: "常规" },
   { id: "appearance", icon: <Palette className="h-5 w-5" />, label: "外观" },
   { id: "notifications", icon: <Bell className="h-5 w-5" />, label: "通知" },
   { id: "language", icon: <Languages className="h-5 w-5" />, label: "语言" },
@@ -55,7 +68,11 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState("appearance")
   const [isLoading, setIsLoading] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [settings, setSettings] = useState(settingsData)
+  const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false); // 新增独立状态
+  const [fastgptKey, setFastgptKey] = useState(settingsData.general.fastgpt_key); // 新增密钥状态
+  const [isSavingKey, setIsSavingKey] = useState(false); // 新增保存状态
 
   const handleThemeChange = (value: string) => {
     setTheme(value)
@@ -70,7 +87,12 @@ export default function SettingsPage() {
       },
     }))
   }
-
+  const handleDialogOpen = () => {
+    setIsAddDialogOpen(true)
+  }
+  const handleDialogClose = () => {
+    setIsAddDialogOpen(false)
+  }
   const handleSwitchChange = (
     section: "appearance" | "notifications" | "privacy",
     key: string,
@@ -115,9 +137,37 @@ export default function SettingsPage() {
       setIsLoading(false)
     }
   }
-
+  const handleSaveApiKey = async () => {
+    setIsSavingKey(true);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSettings(prev => ({
+        ...prev,
+        general: {
+          ...prev.general,
+          fastgpt_key: fastgptKey
+        }
+      }));
+      
+      toast({
+        title: "API密钥已保存",
+        description: "FastGPT集成功能已启用",
+        variant: "default"
+      });
+      setApiKeyDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "保存失败",
+        description: "请检查输入的密钥是否有效",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSavingKey(false);
+    }
+  };
   const handleResetSettings = () => {
-    // 重置设置为默认值
     setSettings(settingsData)
     setTheme("system")
     toast({
@@ -126,7 +176,10 @@ export default function SettingsPage() {
       variant: "default",
     })
   }
-
+  const handleOpenApiKeyDialog = () => {
+    setFastgptKey(settingsData.general.fastgpt_key);
+    setApiKeyDialogOpen(true);
+  };
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
@@ -260,6 +313,59 @@ export default function SettingsPage() {
             )}
 
             {/* 其他标签页内容保持不变 */}
+            {activeTab === "general" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>通用设置</CardTitle>
+                  <CardDescription>管理系统常规配置选项</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    {/* 新增FastGPT集成开关 */}
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base" htmlFor="fastgpt-integration">
+                          <Key className="mr-2 inline-block h-4 w-4" />
+                          启用 FastGPT 集成
+                        </Label>
+                        <p className="text-sm text-muted-foreground">使用 FastGPT 的 AI 能力增强知识管理</p>
+                      </div>
+                      <Switch
+                        id="fastgpt-integration"
+                        checked={!!settings.general.fastgpt_key} // 根据密钥是否存在判断是否启用
+                        onCheckedChange={handleOpenApiKeyDialog} // 点击开关时打开对话框
+                      />
+                    </div>
+
+                    <Separator />
+
+                    {/* API密钥配置按钮 */}
+                    <div className="flex items-center justify-between cursor-pointer" onClick={handleOpenApiKeyDialog}>
+                      <div className="space-y-0.5">
+                        <Label className="text-base">
+                          <Globe className="mr-2 inline-block h-4 w-4" />
+                          FastGPT API 密钥配置
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          {settings.general.fastgpt_key ? "已配置密钥" : "未配置，点击设置"}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        {settings.general.fastgpt_key ? "编辑" : "配置"}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button onClick={handleSaveSettings} disabled={isLoading || isSavingKey}>
+                    {isLoading || isSavingKey ? "保存中..." : "保存设置"}
+                  </Button>
+                  <Button variant="outline" onClick={handleResetSettings}>
+                    重置设置
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
             {activeTab === "notifications" && (
               <Card>
                 <CardHeader>
@@ -422,6 +528,48 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+      <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>配置 FastGPT API 密钥</DialogTitle>
+            <DialogDescription>
+              输入您从 FastGPT 平台获取的 API 密钥以启用集成功能
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="fastgpt-key">API 密钥</Label>
+              <Input
+                id="fastgpt-key"
+                value={fastgptKey}
+                onChange={(e) => setFastgptKey(e.target.value)}
+                placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                autoFocus
+                disabled={isSavingKey} // 保存时禁用输入
+                className="text-sm"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApiKeyDialogOpen(false)} disabled={isSavingKey}>
+              取消
+            </Button>
+            <Button
+              onClick={handleSaveApiKey}
+              disabled={isSavingKey || !fastgptKey.trim()} // 密钥为空或保存中时禁用
+            >
+              {isSavingKey ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  保存中...
+                </>
+              ) : (
+                "保存密钥"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

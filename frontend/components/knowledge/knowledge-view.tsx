@@ -8,6 +8,7 @@ import { ChevronDown, ChevronUp, Terminal } from "lucide-react"
 import CopyButton from "@/components/copy-button"
 import type { KnowledgeNode } from "@/types/knowledge-base"
 import { getKnowledgeNode } from "@/lib/api/knowledge-node"
+import { nodeTypeMap } from "@/types/knowledge-node"
 import ReactMarkdown from "react-markdown"
 import rehypeHighlight from "rehype-highlight"
 import "highlight.js/styles/github-dark.css"
@@ -85,7 +86,8 @@ export default function KnowledgeView({ nodeId, kbId }: KnowledgeViewProps) {
   return (
     <Card>
       <CardContent className="p-6">
-        <h1 className="text-2xl font-bold mb-4">{node.name}</h1>
+        <h1 className="text-2xl font-bold ">{node.name}</h1>
+        <p className="text-muted-foreground mb-2">{nodeTypeMap[node.type].name}</p>
         <div className="prose dark:prose-invert max-w-none">
           {node.content ? (
             <ReactMarkdown
