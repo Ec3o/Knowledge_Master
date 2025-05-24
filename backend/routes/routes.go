@@ -29,7 +29,7 @@ func SetupRoutes() *gin.Engine {
 
 		kb := api.Group("/knowledge-bases")
 		{
-			
+
 			kb.GET("/", controllers.GetUserKnowledgeBases)
 			kb.POST("/", controllers.CreateKnowledgeBase)
 
@@ -47,6 +47,7 @@ func SetupRoutes() *gin.Engine {
 					nodes.GET("/:node_id", controllers.GetNodeData)
 					nodes.PUT("/:node_id", controllers.UpdateNodeData)
 					nodes.DELETE("/:node_id", controllers.DeleteNodeData)
+					nodes.POST("/:node_id/move", controllers.MoveNode)
 				}
 			}
 		}

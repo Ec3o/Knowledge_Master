@@ -50,6 +50,7 @@ import { getKnowledgeBaseWithTree } from "@/lib/api/knowledge-tree";
 import { createKnowledgeNode, updateKnowledgeNode, deleteKnowledgeNode } from "@/lib/api/knowledge-node";
 import { KnowledgeNode, nodeTypeMap, NodeType } from "@/types/knowledge-node";
 import { useDrag, useDrop } from "react-dnd";
+import { randomBytes } from "crypto";
 
 const ItemTypes = {
   NODE: "node",
@@ -237,7 +238,7 @@ const TreeNodeComponent = ({
     setNewName(node.name);
     setIsRenaming(false);
   };
-
+  // console.log(node);
   return (
     <div
       ref={dropRef}
@@ -328,7 +329,7 @@ const TreeNodeComponent = ({
           </div>
         )}
       </div>
-
+      {/* Debugging: console.log(node.children) */}
       {isExpanded && node.children && (
         <div>
           {node.children.map((child) => (
@@ -399,17 +400,22 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       const response = await getKnowledgeBaseWithTree(kbId);
       if (response?.data) {
         setLocalTreeData(response.data);
-        const newExpanded = { ...expanded };
-        const updateExpandedState = (nodes: KnowledgeNode[]) => {
-          nodes.forEach((node) => {
-            if (node.type === "folder" && (node.children ?? []).length > 0) {
-              if (newExpanded[node.id] === undefined) newExpanded[node.id] = true;
-              updateExpandedState(node.children ?? []);
-            }
-          });
-        };
-        updateExpandedState(response.data);
-        setExpanded(newExpanded);
+        // 保留现有展开状态，只添加新发现的文件夹
+        setExpanded(prev => {
+          const newExpanded = { ...prev };
+          const updateExpandedState = (nodes: KnowledgeNode[]) => {
+            nodes.forEach(node => {
+              if (node.type === "folder" && node.children?.length) {
+                if (newExpanded[node.id] === undefined) {
+                  newExpanded[node.id] = true; // 默认展开新发现的文件夹
+                }
+                updateExpandedState(node.children);
+              }
+            });
+          };
+          updateExpandedState(response.data);
+          return newExpanded;
+        });
       }
       toast({ title: "刷新成功", description: "知识树数据已更新", variant: "default" });
     } catch (error) {
@@ -488,9 +494,10 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       return node;
     });
   };
-
+  let isNodeInserted = false;
   const moveNodeInTree = (nodes: KnowledgeNode[], dragId: string, hoverId: string, position: "before" | "after" | "inside"): KnowledgeNode[] => {
     // 从原位置移除节点
+    console.log(dragId, hoverId, position,nodes);
     let draggedNode: KnowledgeNode | null = null;
     const newNodes = nodes.filter((node) => {
       if (node.id === dragId) {
@@ -499,6 +506,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       }
       if (node.children) {
         node.children = moveNodeInTree(node.children, dragId, hoverId, position);
+        console.log(`Checking children of ${node.name} for dragged node`); // Debugging log
       }
       return true;
     });
@@ -510,9 +518,11 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       for (let i = 0; i < children.length; i++) {
         const child = children[i];
         if (child.id === targetId) {
-          if (pos === "inside" && child.type === "folder") {
+          if (pos === "inside" && child.type === "folder" ) {
             child.children = child.children || [];
-            child.children.push(draggedNode!);
+            if (!isNodeInserted){console.log(isNodeInserted);child.children.push(draggedNode!);}
+            console.log(`Inserted ${draggedNode!.name} inside ${child.name}`);
+            isNodeInserted = true;
             return true;
           } else if (pos === "before") {
             children.splice(i, 0, draggedNode!);
@@ -538,36 +548,51 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
   };
 
   const handleAddNode = async () => {
-    if (!newNodeParent || !newNodeName.trim()) {
+    if (!newNodeName.trim()) {
       toast({
-        title: "创建失败",
-        description: "请输入节点名称",
+        title: "无法创建节点",
+        description: "节点名称不能为空",
         variant: "destructive",
       });
       return;
     }
-
+  
     try {
       setIsCreating(true);
-      const newNode = await createKnowledgeNode(kbId, {
-        name: newNodeName,
+  
+      const nodeData = {
+        parent_id: newNodeParent || null,
         type: newNodeType,
-        parent_id: newNodeParent,
+        name: newNodeName,
+        content: newNodeType === "file" ? "" : undefined,
+      };
+  
+      const newNode = await createKnowledgeNode(kbId, nodeData);
+      
+      // 优化：直接更新本地状态而不完全刷新
+      // setLocalTreeData(prev => addNodeToTree(prev, newNodeParent || "", newNode));
+      await refreshTreeData(); // 刷新数据以获取最新状态
+      
+      // 如果是添加到现有文件夹，保持该文件夹展开
+      if (newNodeParent) {
+        setExpanded(prev => ({ ...prev, [newNodeParent]: true }));
+      }
+  
+      setIsAddDialogOpen(false);
+      toast({
+        title: "创建成功",
+        description: `已创建${newNodeType} "${newNodeName}"`,
+        variant: "default",
       });
-
-      if (newNode) {
-        setLocalTreeData((prev) => addNodeToTree(prev, newNodeParent, newNode));
-        setIsAddDialogOpen(false);
-        toast({
-          title: "创建成功",
-          description: `已创建 ${newNodeType}: ${newNodeName}`,
-          variant: "default",
-        });
+  
+      if (newNodeType === "file") {
+        setSelectedNode(newNode.id);
+        onNodeSelect(newNode.id);
       }
     } catch (error) {
       console.error("创建节点失败:", error);
       toast({
-        title: "创建失败",
+        title: "创建节点失败",
         description: error instanceof Error ? error.message : "请检查网络连接或重新登录",
         variant: "destructive",
       });
@@ -575,6 +600,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
       setIsCreating(false);
     }
   };
+  
 
   const handleDeleteNode = async (nodeId: string, nodeName: string) => {
     if (!window.confirm(`确定要删除 "${nodeName}" 吗？此操作不可撤销。`)) {
@@ -712,7 +738,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
         <div className="flex-1 overflow-y-auto p-2">
           {localTreeData.map((node) => (
             <TreeNodeComponent
-              key={node.id}
+              key={`${node.id}-${randomBytes(4).toString("hex")}`}
               node={node}
               level={0}
               onNodeSelect={handleNodeSelect}
