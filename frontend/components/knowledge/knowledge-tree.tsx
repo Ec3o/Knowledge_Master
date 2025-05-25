@@ -47,7 +47,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getKnowledgeBaseWithTree } from "@/lib/api/knowledge-tree";
-import { createKnowledgeNode, updateKnowledgeNode, deleteKnowledgeNode } from "@/lib/api/knowledge-node";
+import { createKnowledgeNode, updateKnowledgeNode, deleteKnowledgeNode, moveKnowledgeNode, moveNode } from "@/lib/api/knowledge-node";
 import { KnowledgeNode, nodeTypeMap, NodeType } from "@/types/knowledge-node";
 import { useDrag, useDrop } from "react-dnd";
 import { randomBytes } from "crypto";
@@ -695,11 +695,11 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
     try {
       // 更新本地状态
-      setLocalTreeData((prev) => moveNodeInTree(prev, dragId, hoverId, position));
+      // setLocalTreeData((prev) => moveNodeInTree(prev, dragId, hoverId, position));
       
       // 这里应该调用后端API来保存移动操作
-      // await moveKnowledgeNode(kbId, dragId, hoverId, position);
-      
+      await moveNode(kbId, dragId, hoverId, position);
+      await refreshTreeData();
       setIsMoveDialogOpen(false);
       toast({
         title: "移动成功",

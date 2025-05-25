@@ -89,3 +89,29 @@ export async function deleteKnowledgeNode(kbId: string, nodeId: string): Promise
     }
     return response.json()
 }
+
+interface MoveNodeRequest {
+  target_id: string;
+  position: 'before' | 'after' | 'inside';
+}
+
+export async function moveNode(kbId: string, dragId: string, targetId: string, position: 'before' | 'after' | 'inside') {
+  const response = await fetch(`${API_BASE}/api/knowledge-bases/${kbId}/nodes/${dragId}/move`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify({
+      target_id: targetId,
+      position: position
+    } as MoveNodeRequest)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '移动节点失败');
+  }
+
+  return await response.json();
+}
