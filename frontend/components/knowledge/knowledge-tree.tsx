@@ -47,7 +47,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getKnowledgeBaseWithTree } from "@/lib/api/knowledge-tree";
-import { createKnowledgeNode, updateKnowledgeNode, deleteKnowledgeNode, moveKnowledgeNode, moveNode } from "@/lib/api/knowledge-node";
+import { createKnowledgeNode, updateKnowledgeNode, deleteKnowledgeNode, moveNode } from "@/lib/api/knowledge-node";
 import { KnowledgeNode, nodeTypeMap, NodeType } from "@/types/knowledge-node";
 import { useDrag, useDrop } from "react-dnd";
 import { randomBytes } from "crypto";
