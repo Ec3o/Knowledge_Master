@@ -25,6 +25,7 @@ export default function Home() {
   }, []);
   return (
     <main className="flex min-h-screen flex-col">
+      <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"></meta>
       {isLoggedIn ? (
               <header className="border-b">
                 <div className="container flex h-16 items-center px-4">
