@@ -47,6 +47,7 @@ export interface INode {
   connection: IConnection
   children?: INode[]
   structure?: string
+  isExpanded?: boolean;
 }
 
 export interface IPartialNode {

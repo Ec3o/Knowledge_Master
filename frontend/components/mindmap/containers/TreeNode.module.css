@@ -8,3 +8,58 @@
     position: relative;
   }
 }
+
+
+.treenode {
+  position: relative;
+  margin: 4px 0;
+}
+
+.tree-node-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.add-node-left {
+  position: absolute;
+  left: -24px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.add-node-left:hover {
+  color: #334155;
+  transform: scale(1.1);
+}
+
+.add-node-right {
+  margin-left: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.add-node-right:hover {
+  color: #334155;
+  transform: scale(1.1);
+}
+
+.toggle-expand {
+  margin-left: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.toggle-expand:hover {
+  color: #334155;
+  transform: scale(1.1);
+}
+
+.tree-node-children {
+  margin-left: 24px;
+  padding-left: 8px;
+  border-left: 1px dashed #cbd5e1;
+}

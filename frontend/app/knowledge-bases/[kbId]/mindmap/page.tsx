@@ -1,6 +1,6 @@
 // page.tsx
 "use client"
-import { useEffect } from "react"
+import { useEffect} from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
@@ -21,7 +21,7 @@ export default function MindMap({
 }) {
     const { kbId } = params;
     const [mindMapData, setMindMapData] = useState(presetData[0]);
-    const [structure, setStructure] = useState(STRUCTURES.TREE_BALANCE);
+    const [structure, setStructure] = useState(STRUCTURES.TREE_RIGHT);
     const [connectionType, setConnectionType] = useState(IConnectionType.CURVE);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -82,32 +82,33 @@ export default function MindMap({
       {!isLoading && !error && (
         <>
           <div className="flex mb-4">
-            {/* 可以保留这些控件，但移除预设数据选择器 */}
-            <select
-          onChange={(e) => {
-            const preset = presetData[parseInt(e.target.value, 10) || 0];
-            setMindMapData(preset);
-          }}
-        >
-          {presetData.map((_, i) => (
-            <option key={i} value={i}>{i}</option>
-          ))}
-        </select>
+            {/* <select
+              onChange={(e) => {
+                const preset = presetData[parseInt(e.target.value, 10) || 0];
+                setMindMapData(preset);
+              }}
+            >
+              {presetData.map((_, i) => (
+                <option key={i} value={i}>{i}</option>
+              ))}
+            </select> */}
             <select
               value={structure}
               onChange={(e) => setStructure(e.target.value)}
+              className="rounded-md border border-gray-300 pr-10 ml-2"
             >
-              <option value={STRUCTURES.TREE_BALANCE}>TREE BALANCE</option>
-              <option value={STRUCTURES.TREE_LEFT}>TREE LEFT</option>
-              <option value={STRUCTURES.TREE_RIGHT}>TREE RIGHT</option>
+              <option value={STRUCTURES.TREE_BALANCE}>平衡</option>
+              <option value={STRUCTURES.TREE_LEFT}>左构 </option>
+              <option value={STRUCTURES.TREE_RIGHT}>右构</option>
             </select>
             <select
               value={connectionType}
               onChange={(e) => setConnectionType(e.target.value as IConnectionType)}
+              className="rounded-md border border-gray-300 p-2 ml-2"
             >
-              <option value={IConnectionType.CURVE}>Curve</option>
-              <option value={IConnectionType.STRAIGHT}>Straight</option>
-              <option value={IConnectionType.POLYLINE}>Polyline</option>
+              <option value={IConnectionType.CURVE}>曲线</option>
+              <option value={IConnectionType.STRAIGHT}>直线</option>
+              <option value={IConnectionType.POLYLINE}>多段连接线</option>
             </select>
           </div>
           <div className="flex-1 overflow-hidden relative">

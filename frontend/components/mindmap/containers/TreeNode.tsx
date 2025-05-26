@@ -1,5 +1,6 @@
 import React, { FC } from 'react'
-
+import { useState } from 'react'
+import { CirclePlus, MinusCircle, PlusCircle} from 'lucide-react'
 import Topic from '../components/Topic'
 import { INode, IBlockSize, IBlockPosition, IPosition, ISize } from '../layouts/types'
 
@@ -13,11 +14,14 @@ interface IProps {
 
 const TreeNode: FC<IProps> = (props) => {
   const { childNodes = [], children } = props
+  const [isExpanded, setIsExpanded] = useState(false);
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded); // 切换展开/折叠状态
+  };
 
   return (
     <>
       {children}
-
       {childNodes.length > 0 ? childNodes.map(node => (
         <TreeNode
           key={node.id}
@@ -33,6 +37,7 @@ const TreeNode: FC<IProps> = (props) => {
             size={node.size}
           />
         </TreeNode>
+        
       )) : null}
 
     </>
