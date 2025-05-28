@@ -23,6 +23,12 @@ const MindMapPage: React.FC<MindMapPageProps> = ({
   onConnectionTypeChange,
   presetData
 }) => {
+  console.log('MindMapPage props:', {
+    mindMapData,
+    structure,
+    connectionType,
+    presetData
+  });
   return (
     <div>
       <Board

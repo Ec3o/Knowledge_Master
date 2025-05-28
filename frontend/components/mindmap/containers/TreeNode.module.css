@@ -9,7 +9,6 @@
   }
 }
 
-
 .treenode {
   position: relative;
   margin: 4px 0;
@@ -25,41 +24,48 @@
   position: absolute;
   left: -24px;
   cursor: pointer;
-  color: #64748b;
+  color: var(--node-icon-color, #64748b);
   transition: all 0.2s ease;
 }
 
 .add-node-left:hover {
-  color: #334155;
+  color: var(--node-icon-hover-color, #334155);
   transform: scale(1.1);
 }
 
 .add-node-right {
   margin-left: 8px;
   cursor: pointer;
-  color: #64748b;
+  color: var(--node-icon-color, #64748b);
   transition: all 0.2s ease;
 }
 
 .add-node-right:hover {
-  color: #334155;
+  color: var(--node-icon-hover-color, #334155);
   transform: scale(1.1);
 }
 
 .toggle-expand {
   margin-left: 8px;
   cursor: pointer;
-  color: #64748b;
+  color: var(--node-icon-color, #64748b);
   transition: all 0.2s ease;
 }
 
 .toggle-expand:hover {
-  color: #334155;
+  color: var(--node-icon-hover-color, #334155);
   transform: scale(1.1);
 }
 
 .tree-node-children {
   margin-left: 24px;
   padding-left: 8px;
-  border-left: 1px dashed #cbd5e1;
+  border-left: 1px dashed var(--node-border-color, #cbd5e1);
+}
+
+/* 暗黑模式样式 */
+:global(.dark) {
+  --node-icon-color: #9ca3af;
+  --node-icon-hover-color: #d1d5db;
+  --node-border-color: #4b5563;
 }

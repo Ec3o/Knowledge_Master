@@ -244,20 +244,30 @@ const TreeNodeComponent = ({
       ref={dropRef}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        backgroundColor: isOver ? "rgba(0,0,0,0.05)" : "transparent",
-        border: isOver && canDrop ? "1px dashed #4CAF50" : "1px dashed transparent",
+        backgroundColor: isOver ? "hsl(var(--muted) / 0.5)" : "transparent",
+        border: isOver && canDrop ? "1px dashed hsl(var(--primary))" : "1px dashed transparent",
         transition: "background-color 0.2s, border 0.2s",
       }}
     >
+      {isOver && canDrop && dropPosition && (
+      <div className={cn(
+        "absolute left-0 right-0 h-0.5 bg-primary transition-all duration-200 z-10",
+        {
+          "top-0": dropPosition === "before",
+          "bottom-0": dropPosition === "after",
+          "top-1/2 -translate-y-1/2 bg-primary/20 h-full rounded": dropPosition === "inside",
+        }
+      )} />
+    )}
       <div
-        ref={dragRef}
-        className={cn(
-          "group flex cursor-pointer items-center py-1 text-sm hover:bg-muted/50 rounded-md px-2",
-          isSelected && "bg-muted font-medium",
-        )}
-        style={{ paddingLeft: `${level * 12}px` }}
-        onClick={handleClick}
-      >
+      ref={dragRef}
+      className={cn(
+        "group flex cursor-pointer items-center py-1 text-sm hover:bg-muted/50 rounded-md px-2 node-content",
+        isSelected && "bg-muted font-medium",
+      )}
+      style={{ paddingLeft: `${level * 12}px` }}
+      onClick={handleClick}
+    >
         <div className="mr-1 cursor-move">
           <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
@@ -718,7 +728,7 @@ export default function KnowledgeTree({ onNodeSelect, treeData, kbId }: Knowledg
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex flex-col h-full bg-white border-r border-border overflow-hidden">
+      <div className="flex flex-col h-full bg-background border-r border-border overflow-hidden">
         <div className="flex items-center justify-between border-b border-border p-3">
           <h2 className="text-sm font-medium">知识架构</h2>
           <div className="flex space-x-1">

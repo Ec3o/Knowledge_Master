@@ -95,7 +95,7 @@ export default function MindMap({
             <select
               value={structure}
               onChange={(e) => setStructure(e.target.value)}
-              className="rounded-md border border-gray-300 pr-10 ml-2"
+              className="rounded-md border border-gray-300 pr-10 ml-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
             >
               <option value={STRUCTURES.TREE_BALANCE}>平衡</option>
               <option value={STRUCTURES.TREE_LEFT}>左构 </option>
@@ -104,26 +104,24 @@ export default function MindMap({
             <select
               value={connectionType}
               onChange={(e) => setConnectionType(e.target.value as IConnectionType)}
-              className="rounded-md border border-gray-300 p-2 ml-2"
+              className="rounded-md border border-gray-300 p-2 ml-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
             >
               <option value={IConnectionType.CURVE}>曲线</option>
               <option value={IConnectionType.STRAIGHT}>直线</option>
               <option value={IConnectionType.POLYLINE}>多段连接线</option>
             </select>
           </div>
-          <div className="flex-1 overflow-hidden relative">
-            <div className="absolute inset-0 overflow-auto min-w-full min-h-full">
-                <MindMapPage
-                mindMapData={mindMapData}
-                structure={structure}
-                connectionType={connectionType}
-                onMindMapDataChange={setMindMapData}
-                onStructureChange={setStructure}
-                onConnectionTypeChange={setConnectionType}
-                presetData={presetData}
-                />
-            </div>
-        </div>
+          <div className="flex-1">
+        <MindMapPage 
+          mindMapData={mindMapData}
+          structure={structure}
+          connectionType={connectionType}
+          onMindMapDataChange={setMindMapData}
+          onStructureChange={setStructure}
+          onConnectionTypeChange={setConnectionType}
+          presetData={presetData}
+        />
+      </div>
         </>
       )}
     </div>

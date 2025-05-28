@@ -59,3 +59,24 @@
     }
   }
 }
+
+:global(.dark) .board {
+  background: rgb(30 41 59 / 1);;
+  & > .zoom {
+    background: rgb(30 41 59 / 1); /* dark:bg-slate-800 */
+    border-color: rgb(51 65 85 / 1); /* dark:border-slate-600 */
+    
+    & > button {
+      background: rgb(71 85 105 / 1); /* dark:bg-slate-600 */
+      color: rgb(241 245 249 / 1); /* dark:text-slate-100 */
+
+      &:hover {
+        background: rgb(100 116 139 / 1); /* dark:hover:bg-slate-500 */
+      }
+    }
+
+    & > .scale {
+      color: rgb(241 245 249 / 1); /* dark:text-slate-100 */
+    }
+  }
+}

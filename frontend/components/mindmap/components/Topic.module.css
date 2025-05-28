@@ -9,28 +9,52 @@
   box-sizing: border-box;
   
   border-radius: 8px;
-  background: #fafafa;
-  color: #333;
+  background: var(--topic-bg, #fafafa);
+  color: var(--topic-color, #333);
   font-size: 16px;
 
   z-index: 999;
 
   &.central {
-    border: 2px solid #000000;
-    background: #000000;
-    color: #fff;
+    border: 2px solid var(--topic-central-border, #000000);
+    background: var(--topic-central-bg, #000000);
+    color: var(--topic-central-color, #fff);
     font-weight: 600;
   }
 
   &.main {
-    border: 2px solid #e7e7e7;
-    background: #e7e7e7;
-    color: #333;
+    border: 2px solid var(--topic-main-border, #e7e7e7);
+    background: var(--topic-main-bg, #e7e7e7);
+    color: var(--topic-main-color, #333);
   }
 
   &.sub {
-    border: 2px solid #ccc;
-    background: #fafafa;
-    color: #333;
+    border: 2px solid var(--topic-sub-border, #ccc);
+    background: var(--topic-sub-bg, #fafafa);
+    color: var(--topic-sub-color, #333);
+  }
+}
+
+/* 暗黑模式样式 */
+:global(.dark) .topic {
+  --topic-bg: #374151;
+  --topic-color: #f9fafb;
+  
+  &.central {
+    --topic-central-border: #f9fafb;
+    --topic-central-bg: #1f2937;
+    --topic-central-color: #f9fafb;
+  }
+
+  &.main {
+    --topic-main-border: #4b5563;
+    --topic-main-bg: #4b5563;
+    --topic-main-color: #f9fafb;
+  }
+
+  &.sub {
+    --topic-sub-border: #6b7280;
+    --topic-sub-bg: #374151;
+    --topic-sub-color: #f9fafb;
   }
 }
