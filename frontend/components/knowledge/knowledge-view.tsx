@@ -11,6 +11,10 @@ import { getKnowledgeNode } from "@/lib/api/knowledge-node"
 import { nodeTypeMap } from "@/types/knowledge-node"
 import ReactMarkdown from "react-markdown"
 import rehypeHighlight from "rehype-highlight"
+import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
+import rehypekatex from "rehype-katex"
+import "katex/dist/katex.min.css"
 import "highlight.js/styles/github-dark.css"
 import { Button } from "@/components/ui/button"
 
@@ -91,7 +95,8 @@ export default function KnowledgeView({ nodeId, kbId }: KnowledgeViewProps) {
         <div className="prose dark:prose-invert max-w-none">
           {node.content ? (
             <ReactMarkdown
-              rehypePlugins={[rehypeHighlight]}
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeHighlight,remarkGfm,rehypekatex]}
               components={{
                 pre: ({ children }) => <pre className="not-prose">{children}</pre>,
                 code: ({ node: codeNode, className, children, ...props }) => {
@@ -162,6 +167,21 @@ export default function KnowledgeView({ nodeId, kbId }: KnowledgeViewProps) {
                     )
                   }
                 },
+                table: ({ children }) => (
+                  <table className="table-auto border-collapse border border-gray-300 dark:border-gray-700">
+                    {children}
+                  </table>
+                ),
+                th: ({ children }) => (
+                  <th className="border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-4 py-2 text-left">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    {children}
+                  </td>
+                ),
               }}
             >
               {node.content}
